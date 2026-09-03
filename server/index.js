@@ -1,5 +1,5 @@
 import dns from 'dns'
-try { dns.setServers(['8.8.8.8','1.1.1.1','8.8.4.4']) } catch {}
+if (!process.env.VERCEL) { try { dns.setServers(['8.8.8.8','1.1.1.1','8.8.4.4']) } catch {} }
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
