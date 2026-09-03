@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bottle: #003D32;
+  --color-bottle-dark: #002A22;
+  --color-bottle-light: #004D40;
+  --color-bottle-soft: #E6F0EE;
+  --color-bottle-muted: #0A332A;
+  --color-cream: #F6F8F7;
+}
+
+:root {
+  --bottle: #003D32;
+  --bottle-dark: #002A22;
+  --bottle-light: #004D40;
+  --bottle-soft: #E6F0EE;
+}
+
+* {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+::selection {
+  background: #003D32;
+  color: white;
+}
+
+.font-display {
+  font-family: 'Cormorant Garamond', serif;
+}
+.font-brand {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Custom scrollbar - Bottle Green Theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #E6F0EE;
+}
+::-webkit-scrollbar-thumb {
+  background: #003D32;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #002A22;
+}
+
+/* Animations */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes kenBurns {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+.animate-scaleIn {
+  animation: scaleIn 0.4s ease-out forwards;
+}
+.animate-kenBurns {
+  animation: kenBurns 8s ease-out forwards;
+}
+
+/* hide scrollbar for slider */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
