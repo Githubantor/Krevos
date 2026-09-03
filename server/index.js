@@ -65,13 +65,13 @@ async function seedIfEmpty(){
     } else console.log(`📦 Products exist: ${c}`)
   }catch(e){ console.error('Seed failed',e)}
 }
-const URIS=[process.env.MONGODB_URI,process.env.MONGODB_URI_FALLBACK,'mongodb://antor1234:gLtCjLFlziknQ5vC@ac-qfqjcqh-shard-00-00.ify2tzs.mongodb.net:27017,ac-qfqjcqh-shard-00-01.ify2tzs.mongodb.net:27017,ac-qfqjcqh-shard-00-02.ify2tzs.mongodb.net:27017/crevos?ssl=true&replicaSet=atlas-egobpd-shard-0&authSource=admin&retryWrites=true&w=majority'].filter(Boolean)
+const URIS=[process.env.MONGODB_URI,process.env.MONGODB_URI_FALLBACK,'mongodb://antor1234:gLtCjLFlziknQ5vC@ac-qfqjcqh-shard-00-00.ify2tzs.mongodb.net:27017,ac-qfqjcqh-shard-00-01.ify2tzs.mongodb.net:27017,ac-qfqjcqh-shard-00-02.ify2tzs.mongodb.net:27017/krevos?ssl=true&replicaSet=atlas-egobpd-shard-0&authSource=admin&retryWrites=true&w=majority'].filter(Boolean)
 async function connectWithFallback(){
-  const dbName=process.env.MONGODB_DB||'crevos'
+  const dbName=process.env.MONGODB_DB||'krevos'
   for(const uri of URIS){
     try{
       console.log(`🔌 Trying MongoDB... ${uri.replace(/:.*@/,':***@').slice(0,80)}...`)
-      await mongoose.connect(uri,{dbName,appName:'Crevos.Store',serverSelectionTimeoutMS:8000})
+      await mongoose.connect(uri,{dbName,appName:'KREVOS.Store',serverSelectionTimeoutMS:8000})
       console.log(`✅ MongoDB connected [${mongoose.connection.host}] db=${mongoose.connection.name}`)
       return true
     }catch(err){
@@ -83,7 +83,7 @@ async function connectWithFallback(){
   return false
 }
 async function start(){
-  app.listen(PORT,'0.0.0.0',()=>{ console.log(`🚀 Crevos.Store API + Frontend http://localhost:${PORT}`); console.log(`   - Health: http://localhost:${PORT}/api/health`); console.log(`   - Cluster (every data): http://localhost:${PORT}/api/cluster`); console.log(`   - Products: http://localhost:${PORT}/api/products`)})
+  app.listen(PORT,'0.0.0.0',()=>{ console.log(`🚀 KREVOS.Store API + Frontend http://localhost:${PORT}`); console.log(`   - Health: http://localhost:${PORT}/api/health`); console.log(`   - Cluster (every data): http://localhost:${PORT}/api/cluster`); console.log(`   - Products: http://localhost:${PORT}/api/products`)})
   console.log('🔌 Connecting to MongoDB (with fallback)...')
   const ok=await connectWithFallback()
   await seedIfEmpty()

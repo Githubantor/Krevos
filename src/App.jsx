@@ -43,17 +43,17 @@ const categories = []
 const lookbook = []
 
 const categoryConfigs = {
-  "polo": { title:"Polo T-Shirts", subtitle:"SPRING DROP '26 • Flat 15% OFF", desc:"From heavyweight pique to mini waffle & striped polos — refined essentials at Crevos.Store.", hero:"https://buri.ltd/cdn/shop/files/SM10535_3.png?v=1772034358&width=800" },
+  "polo": { title:"Polo T-Shirts", subtitle:"SPRING DROP '26 • Flat 15% OFF", desc:"From heavyweight pique to mini waffle & striped polos — refined essentials at KREVOS.Store.", hero:"https://buri.ltd/cdn/shop/files/SM10535_3.png?v=1772034358&width=800" },
   "tshirt": { title:"Solid T-Shirts", subtitle:"THREADBARE • Everyday Essentials", desc:"Drop shoulder, relaxed fit & premium solids — 220–350 GSM heavyweight tees.", hero:"https://buri.ltd/cdn/shop/files/SM10925_18_12864b4f-e8f2-463c-a548-86b8e10a303a.png?v=1772606795&width=800" },
-  "premium": { title:"Premium T-Shirts", subtitle:"THREADBARE • Graphic Collection", desc:"Garment dye & interlock graphics — statement tees with Crevos craftsmanship.", hero:"https://buri.ltd/cdn/shop/files/SM10923_16_45f12e8a-a321-4220-9226-307e0f55ea28.png?v=1772802366&width=800" },
-  "denim": { title:"Denim", subtitle:"THREADBARE • Bottoms", desc:"Slim, relaxed & tapered denim — stretch & 100% cotton washes. Built for everyday Crevos style.", hero:"https://buri.ltd/cdn/shop/files/SM10922_20_23c63c0d-5397-4f70-81c5-30ef3967455a.png?v=1772259625&width=800" },
+  "premium": { title:"Premium T-Shirts", subtitle:"THREADBARE • Graphic Collection", desc:"Garment dye & interlock graphics — statement tees with KREVOS craftsmanship.", hero:"https://buri.ltd/cdn/shop/files/SM10923_16_45f12e8a-a321-4220-9226-307e0f55ea28.png?v=1772802366&width=800" },
+  "denim": { title:"Denim", subtitle:"THREADBARE • Bottoms", desc:"Slim, relaxed & tapered denim — stretch & 100% cotton washes. Built for everyday KREVOS style.", hero:"https://buri.ltd/cdn/shop/files/SM10922_20_23c63c0d-5397-4f70-81c5-30ef3967455a.png?v=1772259625&width=800" },
   "joggers": { title:"Joggers", subtitle:"THREADBARE • Loungewear", desc:"Fleece, French terry & cargo joggers — comfort without compromising luxury.", hero:"https://buri.ltd/cdn/shop/files/SM10925_13_5c928473-fa1e-4475-83e1-c4c058065b1c.png?v=1772343146&width=800" },
   "hoodies": { title:"Hoodies", subtitle:"WINTER DROP • Warm & Refined", desc:"Pullover, zip & oversized hoodies — brushed fleece & heavyweight cotton for winter luxury.", hero:"https://images.unsplash.com/photo-1770686307114-d343925f512e?auto=format&fit=crop&w=800&q=80" },
   "shacket": { title:"Shacket & Shirts", subtitle:"THREADBARE • Layering", desc:"Overshirts, flannel & wool shackets — layering essentials for Dhaka winters.", hero:"https://buri.ltd/cdn/shop/files/SM10533_3.png?v=1772036030&width=800" },
   "sweater": { title:"Sweaters", subtitle:"WINTER DROP • Knitwear", desc:"Crew, half-zip & turtleneck sweaters — merino wool & cotton knits.", hero:"https://buri.ltd/cdn/shop/files/SM10537_26.png?v=1772027959&width=800" },
-  "half-zip": { title:"Half Zip Sweatshirts", subtitle:"WINTER DROP", desc:"Half-zip sweatshirts — effortless layering with Crevos refinement.", hero:"https://buri.ltd/cdn/shop/files/SM10527_7.png?v=1772036121&width=800" },
+  "half-zip": { title:"Half Zip Sweatshirts", subtitle:"WINTER DROP", desc:"Half-zip sweatshirts — effortless layering with KREVOS refinement.", hero:"https://buri.ltd/cdn/shop/files/SM10527_7.png?v=1772036121&width=800" },
   "spring-drop": { title:"Spring Drop '26", subtitle:"FLAT 15% OFF", desc:"All spring essentials — polos, tees & more. Order 4 get 30% OFF.", hero:"https://buri.ltd/cdn/shop/files/1.png?v=1777818940&width=800" },
-  "collections": { title:"All Collections", subtitle:"CREVOS.STORE", desc:"Explore all Crevos.Store collections — winter, spring & threadbare essentials.", hero:"https://buri.ltd/cdn/shop/files/Stone_2Mid.png?v=1778929974&width=800" },
+  "collections": { title:"All Collections", subtitle:"KREVOS.STORE", desc:"Explore all KREVOS.Store collections — winter, spring & threadbare essentials.", hero:"https://buri.ltd/cdn/shop/files/Stone_2Mid.png?v=1778929974&width=800" },
 }
 
 export default function App() {
@@ -73,15 +73,15 @@ export default function App() {
   const heroRef = useRef(null)
 
   // ── Products (MongoDB primary, localStorage fallback) ──
-  const [springProducts, setSpringProducts] = useState(() => { try { const v = localStorage.getItem('crevos_spring'); if (v) { const arr = JSON.parse(v); if (arr.length) return arr } } catch {} return [{ id: 9001, name: "Drop Shoulder T-Shirt — White", price: 1299, original: 1599, image: "https://buri.ltd/cdn/shop/files/SM10925_10_6d267aef-b9a9-49d5-86bc-f682536db4ee.png?v=1772606974&width=600", hover: "https://buri.ltd/cdn/shop/files/SM10925_7_faaf733f-ff5a-4c7b-adc8-00bd634b25c8.png?v=1772606974&width=600", badge: "-19%", fabric: "Cotton Blend 220GSM", color: "White", category: "tshirt" }] })
-  const [denimProducts, setDenimProducts] = useState(() => { try { const v = localStorage.getItem('crevos_denim'); return v ? JSON.parse(v) : [] } catch { return [] } })
-  const [joggersProducts, setJoggersProducts] = useState(() => { try { const v = localStorage.getItem('crevos_joggers'); return v ? JSON.parse(v) : [] } catch { return [] } })
-  const [hoodiesProducts, setHoodiesProducts] = useState(() => { try { const v = localStorage.getItem('crevos_hoodies'); return v ? JSON.parse(v) : [] } catch { return [] } })
-  const [shacketProducts, setShacketProducts] = useState(() => { try { const v = localStorage.getItem('crevos_shacket'); return v ? JSON.parse(v) : [] } catch { return [] } })
-  const [sweaterProducts, setSweaterProducts] = useState(() => { try { const v = localStorage.getItem('crevos_sweater'); return v ? JSON.parse(v) : [] } catch { return [] } })
+  const [springProducts, setSpringProducts] = useState(() => { try { const v = localStorage.getItem('krevos_spring'); if (v) { const arr = JSON.parse(v); if (arr.length) return arr } } catch {} return [{ id: 9001, name: "Drop Shoulder T-Shirt — White", price: 1299, original: 1599, image: "https://buri.ltd/cdn/shop/files/SM10925_10_6d267aef-b9a9-49d5-86bc-f682536db4ee.png?v=1772606974&width=600", hover: "https://buri.ltd/cdn/shop/files/SM10925_7_faaf733f-ff5a-4c7b-adc8-00bd634b25c8.png?v=1772606974&width=600", badge: "-19%", fabric: "Cotton Blend 220GSM", color: "White", category: "tshirt" }] })
+  const [denimProducts, setDenimProducts] = useState(() => { try { const v = localStorage.getItem('krevos_denim'); return v ? JSON.parse(v) : [] } catch { return [] } })
+  const [joggersProducts, setJoggersProducts] = useState(() => { try { const v = localStorage.getItem('krevos_joggers'); return v ? JSON.parse(v) : [] } catch { return [] } })
+  const [hoodiesProducts, setHoodiesProducts] = useState(() => { try { const v = localStorage.getItem('krevos_hoodies'); return v ? JSON.parse(v) : [] } catch { return [] } })
+  const [shacketProducts, setShacketProducts] = useState(() => { try { const v = localStorage.getItem('krevos_shacket'); return v ? JSON.parse(v) : [] } catch { return [] } })
+  const [sweaterProducts, setSweaterProducts] = useState(() => { try { const v = localStorage.getItem('krevos_sweater'); return v ? JSON.parse(v) : [] } catch { return [] } })
 
   // ── Orders (MongoDB primary, localStorage fallback) ──
-  const [orders, setOrders] = useState(() => { try { const v = localStorage.getItem('crevos_orders'); return v ? JSON.parse(v) : [] } catch { return [] } })
+  const [orders, setOrders] = useState(() => { try { const v = localStorage.getItem('krevos_orders'); return v ? JSON.parse(v) : [] } catch { return [] } })
   const [selectedCustomer, setSelectedCustomer] = useState(null)
 
   // ── MongoDB sync: fetch every data on mount ──
@@ -122,13 +122,13 @@ export default function App() {
     return () => { cancelled = true }
   }, [])
 
-  useEffect(() => { localStorage.setItem('crevos_spring', JSON.stringify(springProducts)) }, [springProducts])
-  useEffect(() => { localStorage.setItem('crevos_denim', JSON.stringify(denimProducts)) }, [denimProducts])
-  useEffect(() => { localStorage.setItem('crevos_joggers', JSON.stringify(joggersProducts)) }, [joggersProducts])
-  useEffect(() => { localStorage.setItem('crevos_hoodies', JSON.stringify(hoodiesProducts)) }, [hoodiesProducts])
-  useEffect(() => { localStorage.setItem('crevos_shacket', JSON.stringify(shacketProducts)) }, [shacketProducts])
-  useEffect(() => { localStorage.setItem('crevos_sweater', JSON.stringify(sweaterProducts)) }, [sweaterProducts])
-  useEffect(() => { localStorage.setItem('crevos_orders', JSON.stringify(orders)) }, [orders])
+  useEffect(() => { localStorage.setItem('krevos_spring', JSON.stringify(springProducts)) }, [springProducts])
+  useEffect(() => { localStorage.setItem('krevos_denim', JSON.stringify(denimProducts)) }, [denimProducts])
+  useEffect(() => { localStorage.setItem('krevos_joggers', JSON.stringify(joggersProducts)) }, [joggersProducts])
+  useEffect(() => { localStorage.setItem('krevos_hoodies', JSON.stringify(hoodiesProducts)) }, [hoodiesProducts])
+  useEffect(() => { localStorage.setItem('krevos_shacket', JSON.stringify(shacketProducts)) }, [shacketProducts])
+  useEffect(() => { localStorage.setItem('krevos_sweater', JSON.stringify(sweaterProducts)) }, [sweaterProducts])
+  useEffect(() => { localStorage.setItem('krevos_orders', JSON.stringify(orders)) }, [orders])
 
   const totalSell = orders.reduce((s,o)=> s + (o.total || 0), 0)
 
@@ -269,7 +269,7 @@ export default function App() {
     if (adminPw === ADMIN_PASSWORD) {
       setAdminAuthed(true)
       setAdminError("")
-      showToast("Admin login successful — Welcome to Crevos.Store Admin")
+      showToast("Admin login successful — Welcome to KREVOS.Store Admin")
     } else {
       setAdminError("Incorrect password — try again")
     }
@@ -327,7 +327,7 @@ export default function App() {
       const headerOffset = 80
       const top = el.getBoundingClientRect().top + window.scrollY - headerOffset
       window.scrollTo({ top, behavior: 'smooth' })
-      showToast(`Crevos.Store — Viewing ${id.replace('-', ' ')} collection`)
+      showToast(`KREVOS.Store — Viewing ${id.replace('-', ' ')} collection`)
     }
   }
   const openCategory = (catId) => {
@@ -337,7 +337,7 @@ export default function App() {
       setSearchOpen(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
-      showToast(`Crevos.Store — ${catId} collection coming soon`)
+      showToast(`KREVOS.Store — ${catId} collection coming soon`)
       scrollToSection('collections')
     }
   }
@@ -349,7 +349,7 @@ export default function App() {
     setWishlist(prev => {
       const n = new Set(prev)
       if (n.has(id)) { n.delete(id); showToast("Removed from wishlist") }
-      else { n.add(id); showToast("Added to wishlist — Crevos.Store") }
+      else { n.add(id); showToast("Added to wishlist — KREVOS.Store") }
       return n
     })
   }
@@ -371,13 +371,13 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#F6F8F7] text-zinc-900 selection:bg-[#003D32] selection:text-white">
         {/* Admin Announcement */}
-        <div className="bg-[#003D32] text-white text-[11px] tracking-[0.18em] uppercase font-medium py-3 text-center">Crevos.Store — Admin Access • Secure</div>
+        <div className="bg-[#003D32] text-white text-[11px] tracking-[0.18em] uppercase font-medium py-3 text-center">KREVOS.Store — Admin Access • Secure</div>
         {!adminAuthed ? (
           <div className="max-w-[420px] mx-auto px-4 pt-12 md:pt-20">
             <div className="bg-white rounded-[24px] border border-[#E6F0EE] shadow-xl p-8 md:p-10">
               <div className="text-center">
                 <div className="w-14 h-14 rounded-2xl bg-[#003D32] text-white grid place-items-center mx-auto"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg></div>
-                <h1 className="font-brand font-bold tracking-[0.18em] text-xl mt-4 text-[#003D32]">CREVOS<span className="font-light">.STORE</span></h1>
+                <h1 className="font-brand font-bold tracking-[0.18em] text-xl mt-4 text-[#003D32]">KREVOS<span className="font-light">.STORE</span></h1>
                 <p className="text-sm font-semibold mt-2">Admin Login</p>
                 <p className="text-xs text-zinc-500 mt-1">Enter password only — no username required</p>
               </div>
@@ -397,7 +397,7 @@ export default function App() {
                 <button type="submit" className="w-full bg-[#003D32] text-white rounded-full py-3.5 text-sm font-bold hover:bg-[#004D40] transition">Unlock Admin</button>
                 <button type="button" onClick={exitAdmin} className="w-full border border-[#DDE8E6] rounded-full py-3 text-sm font-medium hover:bg-white transition">← Back to Store</button>
               </form>
-              <p className="text-[11px] text-center text-zinc-400 mt-6">Secure admin area • Crevos.Store • #003D32</p>
+              <p className="text-[11px] text-center text-zinc-400 mt-6">Secure admin area • KREVOS.Store • #003D32</p>
             </div>
           </div>
         ) : (
@@ -405,7 +405,7 @@ export default function App() {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h1 className="font-display text-3xl md:text-4xl leading-none">Admin Dashboard</h1>
-                <p className="text-sm text-zinc-500 mt-2">Password-authenticated • Crevos.Store • Deep Bottle Green #003D32</p>
+                <p className="text-sm text-zinc-500 mt-2">Password-authenticated • KREVOS.Store • Deep Bottle Green #003D32</p>
               </div>
               <button onClick={exitAdmin} className="border border-[#DDE8E6] rounded-full px-6 py-2.5 text-sm font-medium hover:bg-white transition">Exit Admin → Store</button>
             </div>
@@ -473,7 +473,7 @@ export default function App() {
             <div className="bg-white rounded-[24px] border border-[#E6F0EE] p-6 md:p-8 mb-6">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Customers & Order History</h3>
-                <button onClick={async () => { if(confirm("Clear all orders & customers?")) { setOrders([]); setSelectedCustomer(null); localStorage.removeItem('crevos_orders'); try { await api.clearOrders() } catch(e){} showToast("All orders cleared (MongoDB)") } }} className="text-xs text-red-600 hover:underline">Clear Orders</button>
+                <button onClick={async () => { if(confirm("Clear all orders & customers?")) { setOrders([]); setSelectedCustomer(null); localStorage.removeItem('krevos_orders'); try { await api.clearOrders() } catch(e){} showToast("All orders cleared (MongoDB)") } }} className="text-xs text-red-600 hover:underline">Clear Orders</button>
               </div>
               <p className="text-sm text-zinc-500 mt-1">Click a customer row to see all orders — date & price & items.</p>
               {orders.length===0 ? (
@@ -589,7 +589,7 @@ export default function App() {
                 <div className="relative bg-white rounded-[24px] max-w-[560px] w-full max-h-[90vh] overflow-auto shadow-2xl">
                   <div className="sticky top-0 bg-white border-b p-6 flex items-center justify-between rounded-t-[24px]">
                     <div>
-                      <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">Crevos.Store • Admin</p>
+                      <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">KREVOS.Store • Admin</p>
                       <h3 className="font-display text-xl leading-none mt-1">Add Product</h3>
                     </div>
                     <button onClick={() => setShowAddModal(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center hover:bg-zinc-200 transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
@@ -650,9 +650,9 @@ export default function App() {
   if (registerPage) {
     return (
       <div className="min-h-screen bg-[#F6F8F7] selection:bg-[#003D32] selection:text-white">
-        <div className="bg-[#003D32] text-white text-center py-3 text-[11px] tracking-[0.18em] uppercase font-medium">Crevos.Store — First Order Exclusive • 15% OFF</div>
+        <div className="bg-[#003D32] text-white text-center py-3 text-[11px] tracking-[0.18em] uppercase font-medium">KREVOS.Store — First Order Exclusive • 15% OFF</div>
         <header className="max-w-[1480px] mx-auto px-4 md:px-6 lg:px-8 py-6 flex items-center justify-between">
-          <button onClick={() => { setRegisterPage(false); window.history.replaceState(null,"",window.location.pathname) }} className="font-brand font-bold tracking-[0.22em] text-[#003D32] text-xl">CREVOS<span className="font-light text-[#004D40]">.STORE</span></button>
+          <button onClick={() => { setRegisterPage(false); window.history.replaceState(null,"",window.location.pathname) }} className="font-brand font-bold tracking-[0.22em] text-[#003D32] text-xl">KREVOS<span className="font-light text-[#004D40]">.STORE</span></button>
           <button onClick={() => { setRegisterPage(false); window.history.replaceState(null,"",window.location.pathname) }} className="text-sm border border-[#DDE8E6] rounded-full px-5 py-2 hover:border-[#003D32] transition">← Back to Store</button>
         </header>
         <div className="max-w-[960px] mx-auto px-4 pb-12 pt-2">
@@ -661,23 +661,23 @@ export default function App() {
               <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C5A880]/30 to-transparent" />
               <p className="text-[11px] tracking-[0.24em] uppercase font-semibold text-white/60">Welcome Offer</p>
               <h1 className="font-display text-[32px] md:text-[40px] leading-[0.95] mt-3">First Order<br/>Registration</h1>
-              <p className="text-sm text-white/70 mt-3">Join Crevos.Store on your 1st order and unlock luxury benefits — made for you.</p>
+              <p className="text-sm text-white/70 mt-3">Join KREVOS.Store on your 1st order and unlock luxury benefits — made for you.</p>
               <div className="mt-6 space-y-3">
                 <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-4 border border-white/10"><div className="w-9 h-9 rounded-full bg-white text-[#003D32] grid place-items-center shrink-0">%</div><div><p className="text-sm font-semibold">15% OFF First Order</p><p className="text-xs text-white/60">Code: <span className="font-mono font-bold text-white">WELCOME15</span> auto-applied</p></div></div>
                 <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-4 border border-white/10"><div className="w-9 h-9 rounded-full bg-white text-[#003D32] grid place-items-center shrink-0">✓</div><div><p className="text-sm font-semibold">Free Delivery</p><p className="text-xs text-white/60">Free on first order — no minimum</p></div></div>
-                <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-4 border border-white/10"><div className="w-9 h-9 rounded-full bg-white text-[#003D32] grid place-items-center shrink-0">✉</div><div><p className="text-sm font-semibold">Stay in Touch</p><p className="text-xs text-white/60">crevos.store@gmail.com • 01951250125</p></div></div>
+                <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-4 border border-white/10"><div className="w-9 h-9 rounded-full bg-white text-[#003D32] grid place-items-center shrink-0">✉</div><div><p className="text-sm font-semibold">Stay in Touch</p><p className="text-xs text-white/60">krevos.store@gmail.com • 01951250125</p></div></div>
               </div>
               <p className="text-[11px] text-white/50 mt-6">Secure • One-time offer for 1st order • Bottle Green #003D32</p>
             </div>
             <div className="bg-white rounded-[24px] border border-[#E6F0EE] p-6 md:p-8 shadow-xl">
               <h3 className="font-semibold">Create your account</h3>
-              <p className="text-sm text-zinc-500 mt-1">For your 1st order — be part of Crevos Town.</p>
-              <form onSubmit={e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const name=fd.get('name'); const phone=fd.get('phone'); const email=fd.get('email'); const pw=fd.get('pw'); const cpw=fd.get('cpw'); if(!name||!phone||!email||!pw||!cpw){showToast("Please fill all fields"); return} if(pw!==cpw){showToast("Passwords do not match"); return} if(!/^01[0-9]{9}$/.test(phone)){showToast("Phone must be 01XXXXXXXXX (11 digits)"); return} const data={name,phone,email,at:Date.now()}; localStorage.setItem('crevos_first_customer', JSON.stringify(data)); localStorage.setItem('crevos_customer', JSON.stringify({email})); showToast(`Welcome ${name} — 15% OFF code WELCOME15 sent to ${email}`); setRegisterPage(false); setCustomerOpen(false); window.history.replaceState(null,"",window.location.pathname);}} className="mt-6 space-y-4">
+              <p className="text-sm text-zinc-500 mt-1">For your 1st order — be part of KREVOS Town.</p>
+              <form onSubmit={e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const name=fd.get('name'); const phone=fd.get('phone'); const email=fd.get('email'); const pw=fd.get('pw'); const cpw=fd.get('cpw'); if(!name||!phone||!email||!pw||!cpw){showToast("Please fill all fields"); return} if(pw!==cpw){showToast("Passwords do not match"); return} if(!/^01[0-9]{9}$/.test(phone)){showToast("Phone must be 01XXXXXXXXX (11 digits)"); return} const data={name,phone,email,at:Date.now()}; localStorage.setItem('krevos_first_customer', JSON.stringify(data)); localStorage.setItem('krevos_customer', JSON.stringify({email})); showToast(`Welcome ${name} — 15% OFF code WELCOME15 sent to ${email}`); setRegisterPage(false); setCustomerOpen(false); window.history.replaceState(null,"",window.location.pathname);}} className="mt-6 space-y-4">
                 <div><label className="text-xs font-semibold">Full Name *</label><input name="name" required placeholder="Rahim Ahmed" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
                 <div className="grid grid-cols-2 gap-3"><div><label className="text-xs font-semibold">Phone *</label><input name="phone" required pattern="01[0-9]{9}" placeholder="01951250125" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div><div><label className="text-xs font-semibold">Email *</label><input name="email" required type="email" placeholder="you@gmail.com" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div></div>
                 <div><label className="text-xs font-semibold">Password *</label><input name="pw" required type="password" placeholder="Create password" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
                 <div><label className="text-xs font-semibold">Confirm Password *</label><input name="cpw" required type="password" placeholder="Confirm password" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
-                <label className="flex items-start gap-2 text-xs text-zinc-600"><input type="checkbox" required className="mt-0.5 accent-[#003D32]" /> I agree to Crevos.Store Terms & Privacy — 1st order offer 15% OFF.</label>
+                <label className="flex items-start gap-2 text-xs text-zinc-600"><input type="checkbox" required className="mt-0.5 accent-[#003D32]" /> I agree to KREVOS.Store Terms & Privacy — 1st order offer 15% OFF.</label>
                 <button type="submit" className="w-full bg-[#003D32] text-white rounded-full py-3.5 text-sm font-bold hover:bg-[#004D40] transition">Register & Claim 15% OFF</button>
                 <div className="text-center text-xs text-zinc-500">Already registered? <button type="button" onClick={()=>{setRegisterPage(false); setCustomerOpen(true); setCustomerMode("login")}} className="text-[#003D32] font-semibold hover:underline">Login here</button></div>
               </form>
@@ -706,7 +706,7 @@ export default function App() {
                 <span>Flat 15% on Spring Drop ’26</span><span className="w-1 h-1 bg-white/40 rounded-full" />
                 <span>Order any 4 items &amp; get 30% OFF instantly</span><span className="w-1 h-1 bg-white/40 rounded-full" />
                 <span>Free delivery above Tk 1999</span><span className="w-1 h-1 bg-white/40 rounded-full" />
-                <span>crevos.store — Luxury menswear redefined</span><span className="w-1 h-1 bg-white/40 rounded-full" />
+                <span>krevos.store — Luxury menswear redefined</span><span className="w-1 h-1 bg-white/40 rounded-full" />
               </span>
             </div>
           ))}
@@ -762,7 +762,7 @@ export default function App() {
 
             {/* center logo - Bottle Green */}
             <button onClick={() => activeCategory ? closeCategory() : window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex flex-col items-center leading-none shrink-0 cursor-pointer">
-              <span className="font-brand font-bold tracking-[0.22em] text-[22px] md:text-[26px] text-[#003D32]">CREVOS<span className="font-light text-[#004D40]">.STORE</span></span>
+              <span className="font-brand font-bold tracking-[0.22em] text-[22px] md:text-[26px] text-[#003D32]">KREVOS<span className="font-light text-[#004D40]">.STORE</span></span>
             </button>
 
             {/* right icons */}
@@ -777,7 +777,7 @@ export default function App() {
               <button onClick={() => setCustomerOpen(true)} title="Customer Login" className="hidden md:grid place-items-center w-10 h-10 rounded-full hover:bg-white border border-transparent hover:border-[#DDE8E6] transition cursor-pointer">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </button>
-              <button onClick={() => showToast(wishlist.size ? `Wishlist — ${wishlist.size} items at Crevos.Store` : "Wishlist is empty — Save your favorites")} className="relative grid place-items-center w-10 h-10 rounded-full hover:bg-white border border-transparent hover:border-[#DDE8E6] transition cursor-pointer">
+              <button onClick={() => showToast(wishlist.size ? `Wishlist — ${wishlist.size} items at KREVOS.Store` : "Wishlist is empty — Save your favorites")} className="relative grid place-items-center w-10 h-10 rounded-full hover:bg-white border border-transparent hover:border-[#DDE8E6] transition cursor-pointer">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M19 14c1.5-1.6 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 1-4.5 2.5C10.5 4 9.3 3 7.5 3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 3.9 3 5.5l7 7Z"/></svg>
                 {wishlist.size > 0 && <span className="absolute -top-0.5 -right-0.5 bg-[#003D32] text-white text-[10px] w-5 h-5 grid place-items-center rounded-full">{wishlist.size}</span>}
               </button>
@@ -820,18 +820,18 @@ export default function App() {
             </div>
             <div className="relative h-[280px] md:h-auto min-h-[380px] bg-[#f5f1ec] overflow-hidden">
               <img src={categoryConfigs[activeCategory]?.hero} alt={categoryConfigs[activeCategory]?.title} className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur rounded-full px-4 py-2 text-xs font-semibold">crevos.store • Authentic</div>
+              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur rounded-full px-4 py-2 text-xs font-semibold">krevos.store • Authentic</div>
             </div>
           </div>
 
           {/* filter bar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
-              <p className="text-sm text-zinc-600"><span className="font-semibold text-[#003D32]">{getCategoryProducts(activeCategory).length}</span> products • Order online at <span className="font-medium text-[#003D32]">crevos.store</span></p>
+              <p className="text-sm text-zinc-600"><span className="font-semibold text-[#003D32]">{getCategoryProducts(activeCategory).length}</span> products • Order online at <span className="font-medium text-[#003D32]">krevos.store</span></p>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-zinc-500 hidden md:inline">Sort:</span>
-              <select onChange={(e)=>showToast(`Sorted by ${e.target.value} — Crevos.Store`)} className="border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm bg-white outline-none focus:border-[#003D32] cursor-pointer">
+              <select onChange={(e)=>showToast(`Sorted by ${e.target.value} — KREVOS.Store`)} className="border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm bg-white outline-none focus:border-[#003D32] cursor-pointer">
                 <option>Featured</option>
                 <option>Price: Low to High</option>
                 <option>Price: High to Low</option>
@@ -893,7 +893,7 @@ export default function App() {
           {/* related collections */}
           <div className="mt-12 border-t border-[#E6F0EE] pt-8">
             <h3 className="font-display text-xl md:text-2xl mb-2">Explore More Collections</h3>
-            <p className="text-sm text-zinc-500 mb-4">Every collection has its own order page at crevos.store</p>
+            <p className="text-sm text-zinc-500 mb-4">Every collection has its own order page at krevos.store</p>
             <div className="flex flex-wrap gap-2">
               {Object.entries(categoryConfigs).slice(0,12).map(([key, cfg]) => (
                 <button key={key} onClick={() => openCategory(key)} className={`px-5 py-2.5 rounded-full text-sm font-medium border transition cursor-pointer ${key===activeCategory ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white border-[#DDE8E6] hover:border-[#003D32] hover:bg-[#002A22] hover:text-white'}`}>{cfg.title}</button>
@@ -905,7 +905,7 @@ export default function App() {
           <div className="mt-8 grid md:grid-cols-3 gap-4">
             <div className="bg-[#E6F0EE]/60 rounded-2xl p-4 flex items-center gap-3 border border-[#E6F0EE]">
               <div className="w-10 h-10 rounded-full bg-[#003D32] text-white grid place-items-center">✓</div>
-              <div><p className="text-sm font-semibold">Cash on Delivery</p><p className="text-xs text-zinc-500">Pay when you receive at crevos.store</p></div>
+              <div><p className="text-sm font-semibold">Cash on Delivery</p><p className="text-xs text-zinc-500">Pay when you receive at krevos.store</p></div>
             </div>
             <div className="bg-[#E6F0EE]/60 rounded-2xl p-4 flex items-center gap-3 border border-[#E6F0EE]">
               <div className="w-10 h-10 rounded-full bg-[#003D32] text-white grid place-items-center">↩</div>
@@ -936,7 +936,7 @@ export default function App() {
               <div className={`absolute inset-0 flex items-center ${s.align === 'center' ? 'justify-center text-center' : s.align === 'right' ? 'justify-end text-right' : 'justify-start text-left'} px-6 md:px-12 lg:px-20`}>
                 <div className={`max-w-[560px] text-white ${idx === currentSlide ? 'animate-fadeInUp' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '200ms' }}>
                   <p className="text-[11px] md:text-xs tracking-[0.28em] uppercase font-semibold mb-3 md:mb-4 bg-white/15 backdrop-blur inline-flex px-3 py-1.5 rounded-full border border-white/20">
-                    {s.subtitle} • crevos.store
+                    {s.subtitle} • krevos.store
                   </p>
                   <h1 className="font-display font-medium leading-[0.9] text-[38px] md:text-[56px] lg:text-[64px] whitespace-pre-line drop-shadow-lg">
                     {s.title}
@@ -1001,7 +1001,7 @@ export default function App() {
         {categories.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[#E6F0EE] bg-white p-12 text-center">
             <p className="text-sm font-semibold text-[#003D32]">No collections available</p>
-            <p className="text-sm text-zinc-500 mt-1">Exclusive selections will appear here — crevos.store</p>
+            <p className="text-sm text-zinc-500 mt-1">Exclusive selections will appear here — krevos.store</p>
           </div>
         ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
@@ -1032,7 +1032,7 @@ export default function App() {
         {springProducts.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[#E6F0EE] bg-white p-12 text-center">
             <p className="text-sm font-semibold text-[#003D32]">No products available</p>
-            <p className="text-sm text-zinc-500 mt-1">Spring ’26 drop is being prepared — stay tuned at crevos.store</p>
+            <p className="text-sm text-zinc-500 mt-1">Spring ’26 drop is being prepared — stay tuned at krevos.store</p>
           </div>
         ) : (
         <>
@@ -1083,9 +1083,9 @@ export default function App() {
             <span className="absolute top-4 left-4 md:top-6 md:left-6 bg-white text-[#003D32] text-[11px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full">Own The Look</span>
           </div>
           <div className="p-6 md:p-10 lg:p-12 flex flex-col">
-            <p className="text-[11px] tracking-[0.24em] uppercase text-zinc-400">Crevos.Store Lookbook</p>
+            <p className="text-[11px] tracking-[0.24em] uppercase text-zinc-400">KREVOS.Store Lookbook</p>
             <h2 className="font-display text-[30px] md:text-[40px] leading-[0.95] mt-3">Shop the<br/>Complete Look</h2>
-            <p className="text-sm text-zinc-400 mt-3">Curated head-to-toe outfits — tap to shop each piece. Free styling consultation at crevos.store</p>
+            <p className="text-sm text-zinc-400 mt-3">Curated head-to-toe outfits — tap to shop each piece. Free styling consultation at krevos.store</p>
 
             <div className="mt-8 space-y-3">
               {[0,1,2].map(i => {
@@ -1120,7 +1120,7 @@ export default function App() {
           {[
             { title:"Delivering All Over Bangladesh", desc:"Free delivery above Tk 1,999 • Same day in Dhaka", icon:"M5 8h14M5 8a2 2 0 1 1 0 4h14a2 2 0 1 0 0-4H5Z" },
             { title:"100% Safe & Secure Checkout", desc:"SSL encrypted • bKash, Nagad, Cards & COD", icon:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" },
-            { title:"24/7 Online Support", desc:"Chat with Crevos experts — crevos.store/help", icon:"M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" },
+            { title:"24/7 Online Support", desc:"Chat with KREVOS experts — krevos.store/help", icon:"M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" },
           ].map(f => (
             <div key={f.title} className="flex items-center gap-4 bg-white rounded-2xl border border-[#E6F0EE] p-5">
               <div className="w-12 h-12 rounded-full bg-[#003D32] text-white grid place-items-center shrink-0">
@@ -1141,10 +1141,10 @@ export default function App() {
           {/* subtle gold accent line */}
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C5A880]/30 to-transparent" />
           <div>
-            <h3 className="font-display text-[28px] md:text-[32px] leading-none">Join Crevos Town</h3>
-            <p className="text-sm text-white/70 mt-2 max-w-[480px]">Get 15% off your first order + early access to Eid, Spring & Winter drops. No spam — only luxury updates from crevos.store</p>
+            <h3 className="font-display text-[28px] md:text-[32px] leading-none">Join KREVOS Town</h3>
+            <p className="text-sm text-white/70 mt-2 max-w-[480px]">Get 15% off your first order + early access to Eid, Spring & Winter drops. No spam — only luxury updates from krevos.store</p>
           </div>
-          <form onSubmit={e => { e.preventDefault(); showToast("Welcome to Crevos Town — check your email!"); e.currentTarget.reset() }} className="flex w-full lg:w-auto gap-2 max-w-[520px] grow">
+          <form onSubmit={e => { e.preventDefault(); showToast("Welcome to KREVOS Town — check your email!"); e.currentTarget.reset() }} className="flex w-full lg:w-auto gap-2 max-w-[520px] grow">
             <input required type="email" placeholder="Enter your email" className="flex-1 bg-white text-[#003D32] rounded-full px-6 py-4 text-sm outline-none placeholder:text-zinc-400 focus:ring-2 focus:ring-[#C5A880]/40" />
             <button className="bg-white text-[#003D32] hover:bg-[#E6F0EE] transition rounded-full px-7 py-4 text-sm font-semibold shrink-0 shadow-lg">Subscribe</button>
           </form>
@@ -1159,11 +1159,11 @@ export default function App() {
         <div className="max-w-[1480px] mx-auto px-4 md:px-6 lg:px-8 py-10 md:py-14">
           <div className="grid md:grid-cols-12 gap-8 md:gap-12">
             <div className="md:col-span-4">
-              <p className="font-brand font-bold tracking-[0.22em] text-white text-xl">CREVOS<span className="font-light">.STORE</span></p>
-              <p className="text-sm leading-relaxed mt-4 max-w-[360px]">Luxury menswear redefined in Bangladesh. From ThreadBare essentials to ornate Eid panjabis — Crevos.Store crafts timeless pieces for the modern gentleman.</p>
+              <p className="font-brand font-bold tracking-[0.22em] text-white text-xl">KREVOS<span className="font-light">.STORE</span></p>
+              <p className="text-sm leading-relaxed mt-4 max-w-[360px]">Luxury menswear redefined in Bangladesh. From ThreadBare essentials to ornate Eid panjabis — KREVOS.Store crafts timeless pieces for the modern gentleman.</p>
               <div className="flex gap-3 mt-6">
-                <a href="https://www.facebook.com/profile.php?id=61550245897755" target="_blank" rel="noopener noreferrer" aria-label="Crevos.Store on Facebook" className="w-10 h-10 rounded-full bg-white/10 grid place-items-center hover:bg-white hover:text-[#003D32] transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-                <a href="https://www.instagram.com/crevos.store" target="_blank" rel="noopener noreferrer" aria-label="Crevos.Store on Instagram" className="w-10 h-10 rounded-full bg-white/10 grid place-items-center hover:bg-white hover:text-[#003D32] transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg></a>
+                <a href="https://www.facebook.com/profile.php?id=61550245897755" target="_blank" rel="noopener noreferrer" aria-label="KREVOS.Store on Facebook" className="w-10 h-10 rounded-full bg-white/10 grid place-items-center hover:bg-white hover:text-[#003D32] transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+                <a href="https://www.instagram.com/krevos.store" target="_blank" rel="noopener noreferrer" aria-label="KREVOS.Store on Instagram" className="w-10 h-10 rounded-full bg-white/10 grid place-items-center hover:bg-white hover:text-[#003D32] transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg></a>
                 <a href="#" className="w-10 h-10 rounded-full bg-white/10 grid place-items-center hover:bg-white hover:text-[#003D32] transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M23 3a10.9 10.9 0 0 1-3.1 1 4.48 4.48 0 0 0-7.9 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.1-.9A7.72 7.72 0 0 0 23 3Z"/></svg></a>
               </div>
               <div className="mt-8">
@@ -1184,20 +1184,20 @@ export default function App() {
               </ul>
             </div>
             <div className="md:col-span-3">
-              <h4 className="text-white font-semibold text-sm mb-4">Shop at Crevos.Store</h4>
+              <h4 className="text-white font-semibold text-sm mb-4">Shop at KREVOS.Store</h4>
               <ul className="space-y-2.5 text-sm">
                 {["ThreadBare — T-shirts & Denim","Winter Drop — Hoodies & Sweaters","Spring Drop '26 — Polos & Tees","New Arrivals","Best Sellers"].map(l => <li key={l}><a href="#" className="hover:text-white transition">{l}</a></li>)}
               </ul>
             </div>
             <div className="md:col-span-3">
               <h4 className="text-white font-semibold text-sm mb-4">Contact Us</h4>
-              <p className="text-sm leading-relaxed">Online Store Only — No Physical Outlet<br/><a href="mailto:crevos.store@gmail.com" className="hover:text-white underline underline-offset-4 decoration-white/20">crevos.store@gmail.com</a><br/><a href="mailto:support@crevos.store" className="hover:text-white underline underline-offset-4 decoration-white/20">support@crevos.store</a><br/><a href="tel:+8801951250125" className="hover:text-white underline underline-offset-4 decoration-white/20">01951250125</a><br/><span className="text-white/50">Sat–Thu: 10AM – 8PM (BST)</span></p>
-              <p className="text-sm mt-3"><a href="mailto:crevos.store@gmail.com?subject=Inquiry%20from%20crevos.store%20website&body=Hello%20Crevos.Store%20team%2C%0A" onClick={() => { navigator.clipboard?.writeText("crevos.store@gmail.com"); showToast("crevos.store@gmail.com — opening email & copied") }} className="underline underline-offset-4 decoration-white/30 hover:decoration-white">Email us</a> <span className="mx-1">•</span> <button onClick={() => setInfoPage("contact")} className="underline underline-offset-4 decoration-white/30 hover:decoration-white">Live Chat</button> <span className="mx-1">•</span> <button onClick={() => { setInfoPage("contact"); showToast("Contact form opened") }} className="underline underline-offset-4 decoration-white/30 hover:decoration-white">Contact Form</button></p>
-              <p className="text-xs mt-4 text-white/50">© 2026 Crevos.Store. All rights reserved.<br/>We deliver all over Bangladesh.</p>
+              <p className="text-sm leading-relaxed">Online Store Only — No Physical Outlet<br/><a href="mailto:krevos.store@gmail.com" className="hover:text-white underline underline-offset-4 decoration-white/20">krevos.store@gmail.com</a><br/><a href="mailto:support@krevos.store" className="hover:text-white underline underline-offset-4 decoration-white/20">support@krevos.store</a><br/><a href="tel:+8801951250125" className="hover:text-white underline underline-offset-4 decoration-white/20">01951250125</a><br/><span className="text-white/50">Sat–Thu: 10AM – 8PM (BST)</span></p>
+              <p className="text-sm mt-3"><a href="mailto:krevos.store@gmail.com?subject=Inquiry%20from%20krevos.store%20website&body=Hello%20KREVOS.Store%20team%2C%0A" onClick={() => { navigator.clipboard?.writeText("krevos.store@gmail.com"); showToast("krevos.store@gmail.com — opening email & copied") }} className="underline underline-offset-4 decoration-white/30 hover:decoration-white">Email us</a> <span className="mx-1">•</span> <button onClick={() => setInfoPage("contact")} className="underline underline-offset-4 decoration-white/30 hover:decoration-white">Live Chat</button> <span className="mx-1">•</span> <button onClick={() => { setInfoPage("contact"); showToast("Contact form opened") }} className="underline underline-offset-4 decoration-white/30 hover:decoration-white">Contact Form</button></p>
+              <p className="text-xs mt-4 text-white/50">© 2026 KREVOS.Store. All rights reserved.<br/>We deliver all over Bangladesh.</p>
             </div>
           </div>
           <div className="mt-10 pt-6 border-t border-white/10 flex flex-col md:flex-row gap-4 text-xs justify-between items-center">
-            <p>© 2026 Crevos.Store — crevos.store • Privacy • Terms • Sitemap</p>
+            <p>© 2026 KREVOS.Store — krevos.store • Privacy • Terms • Sitemap</p>
             <div className="flex items-center gap-4">
               <p className="text-white/50 hidden md:block">This is a demo frontend inspired by Buri.ltd • Built with React + Tailwind CSS</p>
               <a href="#admin" onClick={() => setAdminView(true)} className="inline-flex items-center gap-1.5 text-white/60 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white transition"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Admin</a>
@@ -1213,7 +1213,7 @@ export default function App() {
           <div className="relative bg-white rounded-[24px] max-w-[640px] w-full max-h-[90vh] overflow-auto shadow-2xl animate-scaleIn">
             <div className="sticky top-0 bg-white border-b p-6 flex items-center justify-between rounded-t-[24px]">
               <div>
-                <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">Crevos.Store • Help & Info</p>
+                <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">KREVOS.Store • Help & Info</p>
                 <h3 className="font-display text-xl leading-none mt-1">
                   {infoPage==="help" && "Help Center"}
                   {infoPage==="delivery" && "Delivery & Collection"}
@@ -1228,11 +1228,11 @@ export default function App() {
             <div className="p-6 space-y-4 text-sm leading-relaxed">
               {infoPage==="help" && (
                 <div className="space-y-4">
-                  <p className="text-zinc-600">Welcome to <b className="text-[#003D32]">Crevos.Store Help Center</b>. Find answers or contact us directly.</p>
+                  <p className="text-zinc-600">Welcome to <b className="text-[#003D32]">KREVOS.Store Help Center</b>. Find answers or contact us directly.</p>
                   <div className="grid gap-3">
                     <div className="rounded-2xl border border-[#E6F0EE] p-4"><p className="font-semibold">How do I place an order?</p><p className="text-zinc-600 text-xs mt-1">Browse products → Select size → Add to Cart → Checkout with Cash on Delivery. You’ll get a confirmation call at <a href="tel:+8801951250125" className="text-[#003D32] underline">01951250125</a>.</p></div>
                     <div className="rounded-2xl border border-[#E6F0EE] p-4"><p className="font-semibold">Payment options?</p><p className="text-zinc-600 text-xs mt-1">Cash on Delivery, bKash, Nagad, Cards — 100% SSL secure at checkout.</p></div>
-                    <div className="rounded-2xl border border-[#E6F0EE] p-4"><p className="font-semibold">Need more help?</p><p className="text-zinc-600 text-xs mt-1">Email <a href="mailto:crevos.store@gmail.com" className="text-[#003D32] underline">crevos.store@gmail.com</a> or call 01951250125 (Sat–Thu 10AM–8PM).</p></div>
+                    <div className="rounded-2xl border border-[#E6F0EE] p-4"><p className="font-semibold">Need more help?</p><p className="text-zinc-600 text-xs mt-1">Email <a href="mailto:krevos.store@gmail.com" className="text-[#003D32] underline">krevos.store@gmail.com</a> or call 01951250125 (Sat–Thu 10AM–8PM).</p></div>
                   </div>
                   <button onClick={() => setInfoPage("contact")} className="w-full bg-[#003D32] text-white rounded-full py-3 text-sm font-bold hover:bg-[#004D40] transition">Contact Support</button>
                 </div>
@@ -1253,7 +1253,7 @@ export default function App() {
                 <div className="space-y-4">
                   <div className="rounded-2xl bg-[#E6F0EE]/50 border border-[#E6F0EE] p-4"><p className="font-semibold text-[#003D32]">7-Day Easy Exchange • No return, only exchange for size/defect</p></div>
                   <ul className="space-y-2 text-zinc-600 text-xs list-disc pl-5">
-                    <li>Notify within 7 days via <a href="mailto:crevos.store@gmail.com" className="text-[#003D32] underline">crevos.store@gmail.com</a> or 01951250125.</li>
+                    <li>Notify within 7 days via <a href="mailto:krevos.store@gmail.com" className="text-[#003D32] underline">krevos.store@gmail.com</a> or 01951250125.</li>
                     <li>Item must be unused, unwashed, with tags intact.</li>
                     <li>Exchange available for same product / size only — subject to stock.</li>
                     <li>Delivery fee for exchange: Customer bears cost unless defect from our side.</li>
@@ -1295,16 +1295,16 @@ export default function App() {
               {infoPage==="contact" && (
                 <div className="space-y-4">
                   <div className="rounded-2xl bg-[#003D32] text-white p-5">
-                    <p className="text-sm font-semibold">Contact Crevos.Store</p>
+                    <p className="text-sm font-semibold">Contact KREVOS.Store</p>
                     <p className="text-xs text-white/70 mt-1">Online Store Only — No Physical Outlet</p>
-                    <div className="mt-3 space-y-1 text-sm"><p><a href="mailto:crevos.store@gmail.com" className="underline decoration-white/30">crevos.store@gmail.com</a> • <a href="mailto:support@crevos.store" className="underline decoration-white/30">support@crevos.store</a></p><p><a href="tel:+8801951250125" className="underline decoration-white/30">01951250125</a> • Sat–Thu 10AM–8PM (BST)</p></div>
+                    <div className="mt-3 space-y-1 text-sm"><p><a href="mailto:krevos.store@gmail.com" className="underline decoration-white/30">krevos.store@gmail.com</a> • <a href="mailto:support@krevos.store" className="underline decoration-white/30">support@krevos.store</a></p><p><a href="tel:+8801951250125" className="underline decoration-white/30">01951250125</a> • Sat–Thu 10AM–8PM (BST)</p></div>
                   </div>
                   <div className="flex gap-3">
                     <a href="https://www.facebook.com/profile.php?id=61550245897755" target="_blank" rel="noopener noreferrer" className="flex-1 border border-[#DDE8E6] rounded-full py-2.5 text-center text-sm font-medium hover:border-[#003D32] transition">Facebook</a>
-                    <a href="https://www.instagram.com/crevos.store" target="_blank" rel="noopener noreferrer" className="flex-1 border border-[#DDE8E6] rounded-full py-2.5 text-center text-sm font-medium hover:border-[#003D32] transition">Instagram</a>
+                    <a href="https://www.instagram.com/krevos.store" target="_blank" rel="noopener noreferrer" className="flex-1 border border-[#DDE8E6] rounded-full py-2.5 text-center text-sm font-medium hover:border-[#003D32] transition">Instagram</a>
                     <a href="tel:+8801951250125" className="flex-1 bg-[#003D32] text-white rounded-full py-2.5 text-center text-sm font-bold hover:bg-[#004D40] transition">Call Now</a>
                   </div>
-                  <form onSubmit={e=>{e.preventDefault(); showToast("Message sent — we’ll reply at crevos.store@gmail.com"); setInfoPage(null)}} className="space-y-3">
+                  <form onSubmit={e=>{e.preventDefault(); showToast("Message sent — we’ll reply at krevos.store@gmail.com"); setInfoPage(null)}} className="space-y-3">
                     <input required placeholder="Your Name" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" />
                     <input required type="email" placeholder="Your Email" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" />
                     <textarea required placeholder="How can we help?" rows="3" className="w-full border border-[#DDE8E6] rounded-2xl px-5 py-3 text-sm outline-none focus:border-[#003D32] resize-none"></textarea>
@@ -1325,7 +1325,7 @@ export default function App() {
           <div className="relative bg-white rounded-[24px] max-w-[420px] w-full shadow-2xl animate-scaleIn overflow-hidden">
             <div className="p-6 border-b flex items-center justify-between">
               <div>
-                <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">Crevos.Store</p>
+                <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">KREVOS.Store</p>
                 <h3 className="font-display text-xl leading-none mt-1">{customerMode === "login" ? "Customer Login" : "Create Account"}</h3>
               </div>
               <button onClick={() => setCustomerOpen(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center hover:bg-zinc-200 transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
@@ -1335,7 +1335,7 @@ export default function App() {
                 <button onClick={() => setCustomerMode("login")} className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${customerMode==="login" ? "bg-[#003D32] text-white" : "text-zinc-600"}`}>Login</button>
                 <button onClick={() => setCustomerMode("register")} className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${customerMode==="register" ? "bg-[#003D32] text-white" : "text-zinc-600"}`}>Register</button>
               </div>
-              <form onSubmit={e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const email=fd.get("email"); const pw=fd.get("password"); if(!email||!pw){showToast("Please fill email & password"); return} showToast(customerMode==="login" ? `Welcome back ${email} — Crevos.Store` : `Account created for ${email} — Welcome to Crevos.Store`); setCustomerOpen(false); e.currentTarget.reset();}} className="space-y-4">
+              <form onSubmit={e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const email=fd.get("email"); const pw=fd.get("password"); if(!email||!pw){showToast("Please fill email & password"); return} showToast(customerMode==="login" ? `Welcome back ${email} — KREVOS.Store` : `Account created for ${email} — Welcome to KREVOS.Store`); setCustomerOpen(false); e.currentTarget.reset();}} className="space-y-4">
                 <input name="email" type="email" required placeholder="Email" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" />
                 <input name="password" type="password" required placeholder="Password" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" />
                 {customerMode==="register" && <input name="name" required placeholder="Full Name" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" />}
@@ -1368,7 +1368,7 @@ export default function App() {
                 <div className="text-center py-16">
                   <div className="w-20 h-20 rounded-full bg-zinc-100 grid place-items-center mx-auto"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/></svg></div>
                   <p className="mt-4 font-medium">Your cart is empty</p>
-                  <p className="text-sm text-zinc-500">Add Crevos pieces to get started</p>
+                  <p className="text-sm text-zinc-500">Add KREVOS pieces to get started</p>
                   <button onClick={() => setCartOpen(false)} className="mt-6 bg-[#003D32] text-white rounded-full px-7 py-3 text-sm font-semibold">Continue Shopping</button>
                 </div>
               ) : cart.map(item => (
@@ -1392,7 +1392,7 @@ export default function App() {
               <div className="p-6 border-t bg-[#E6F0EE]/60 space-y-4">
                 <div className="flex justify-between text-sm"><span>Subtotal</span><span className="font-semibold">Tk {cartTotal.toLocaleString()}.00</span></div>
                 <div className="flex justify-between text-sm"><span>Shipping</span><span className="text-green-600 font-medium">Free over Tk 1,999</span></div>
-                <button onClick={async () => { const customer = (()=>{ try{ const v=localStorage.getItem('crevos_first_customer'); if(v){const j=JSON.parse(v); return {name:j.name||'Guest', phone:j.phone||'—', address:j.address||'—'}} }catch{} return {name:'Guest Checkout', phone:'—', address:'—'} })(); const order = await createOrder(customer, [...cart], cartTotal); showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • Crevos.Store will call you (MongoDB)`); setCart([]); setCartOpen(false)}} className="w-full bg-[#003D32] text-white rounded-full py-4 font-semibold hover:bg-[#004D40] transition">Checkout • Tk {cartTotal.toLocaleString()}.00</button>
+                <button onClick={async () => { const customer = (()=>{ try{ const v=localStorage.getItem('krevos_first_customer'); if(v){const j=JSON.parse(v); return {name:j.name||'Guest', phone:j.phone||'—', address:j.address||'—'}} }catch{} return {name:'Guest Checkout', phone:'—', address:'—'} })(); const order = await createOrder(customer, [...cart], cartTotal); showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • KREVOS.Store will call you (MongoDB)`); setCart([]); setCartOpen(false)}} className="w-full bg-[#003D32] text-white rounded-full py-4 font-semibold hover:bg-[#004D40] transition">Checkout • Tk {cartTotal.toLocaleString()}.00</button>
                 <button onClick={() => setCartOpen(false)} className="w-full text-sm font-medium text-center hover:underline">Continue Shopping</button>
               </div>
             )}
@@ -1409,7 +1409,7 @@ export default function App() {
               <div className="flex items-center gap-3">
                 <div className="flex-1 flex items-center gap-3 border border-[#DDE8E6] rounded-full px-5 py-3 focus-within:border-[#003D32] focus-within:ring-2 focus-within:ring-black/5 transition">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                  <input autoFocus placeholder="Search Crevos.Store — e.g. Polo, Kurta" className="flex-1 outline-none text-sm placeholder:text-zinc-400" />
+                  <input autoFocus placeholder="Search KREVOS.Store — e.g. Polo, Kurta" className="flex-1 outline-none text-sm placeholder:text-zinc-400" />
                 </div>
                 <button onClick={() => setSearchOpen(false)} className="w-10 h-10 rounded-full bg-zinc-100 grid place-items-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
               </div>
@@ -1417,7 +1417,7 @@ export default function App() {
                 <p className="text-xs tracking-widest uppercase font-semibold text-zinc-500 mb-3">Popular Searches</p>
                 <div className="flex flex-wrap gap-2">
                   {["Polo Shirt","T-Shirt","Spring Drop","Hoodie"].map(t => (
-                    <button key={t} onClick={() => showToast(`Searching for "${t}" — Crevos.Store`)} className="px-4 py-2 rounded-full border border-[#DDE8E6] text-sm hover:bg-[#002A22] hover:text-white hover:border-[#003D32] transition">{t}</button>
+                    <button key={t} onClick={() => showToast(`Searching for "${t}" — KREVOS.Store`)} className="px-4 py-2 rounded-full border border-[#DDE8E6] text-sm hover:bg-[#002A22] hover:text-white hover:border-[#003D32] transition">{t}</button>
                   ))}
                 </div>
               </div>
@@ -1437,7 +1437,7 @@ export default function App() {
           <div className="relative bg-white rounded-[24px] max-w-[560px] w-full max-h-[90vh] overflow-auto shadow-2xl animate-scaleIn">
             <div className="sticky top-0 bg-white border-b p-6 flex items-center justify-between rounded-t-[24px]">
               <div>
-                <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">Crevos.Store • Order Now</p>
+                <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">KREVOS.Store • Order Now</p>
                 <h3 className="font-display text-xl leading-none mt-1">Quick Order</h3>
               </div>
               <button onClick={() => setOrderProduct(null)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center hover:bg-zinc-200 transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
@@ -1447,7 +1447,7 @@ export default function App() {
                 <img src={orderProduct.image} alt={orderProduct.name} className="w-24 h-24 rounded-xl object-cover bg-white" />
                 <div className="flex-1">
                   <h4 className="text-sm font-semibold leading-tight">{orderProduct.name}</h4>
-                  <p className="text-xs text-zinc-500 mt-1">{orderProduct.fabric || orderProduct.color} • crevos.store</p>
+                  <p className="text-xs text-zinc-500 mt-1">{orderProduct.fabric || orderProduct.color} • krevos.store</p>
                   <p className="text-sm font-bold mt-2">Tk {orderProduct.price.toLocaleString()} {orderProduct.original && orderProduct.original !== orderProduct.price && <span className="text-xs font-normal text-zinc-400 line-through ml-2">Tk {orderProduct.original.toLocaleString()}</span>}</p>
                 </div>
               </div>
@@ -1484,10 +1484,10 @@ export default function App() {
                 addToCart({...orderProduct, size: orderSize, qty: orderQty})
                 setOrderProduct(null)
                 setOrderQty(1)
-                showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • Crevos.Store will call ${phone} (MongoDB)`)
+                showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • KREVOS.Store will call ${phone} (MongoDB)`)
                 setCartOpen(true)
               }} className="mt-6 space-y-3">
-                <p className="text-sm font-semibold">Delivery Details — Online Order at crevos.store</p>
+                <p className="text-sm font-semibold">Delivery Details — Online Order at krevos.store</p>
                 <input name="name" required placeholder="Full Name" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
                 <input name="phone" required placeholder="Phone Number (01XXXXXXXXX)" pattern="01[0-9]{9}" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
                 <input name="address" required placeholder="Delivery Address — Road, Area, District" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
@@ -1508,7 +1508,7 @@ export default function App() {
           <div onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-[#003D32]/40 backdrop-blur-sm" />
           <div className="absolute left-0 top-0 h-full w-[86%] max-w-[360px] bg-white shadow-2xl overflow-auto animate-scaleIn origin-left">
             <div className="p-6 border-b flex items-center justify-between">
-              <span className="font-brand font-bold tracking-[0.18em]">CREVOS.STORE</span>
+              <span className="font-brand font-bold tracking-[0.18em]">KREVOS.STORE</span>
               <button onClick={() => setMobileOpen(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
             </div>
             <nav className="p-6 space-y-1">
@@ -1530,7 +1530,7 @@ export default function App() {
             </nav>
             <div className="p-6 bg-[#E6F0EE]/60 m-6 rounded-2xl">
               <p className="text-xs tracking-widest uppercase font-semibold">Need Help?</p>
-              <p className="text-sm mt-2"><a href="mailto:crevos.store@gmail.com" className="hover:text-[#003D32]">crevos.store@gmail.com</a><br/><a href="tel:+8801951250125" className="hover:text-[#003D32]">01951250125</a></p>
+              <p className="text-sm mt-2"><a href="mailto:krevos.store@gmail.com" className="hover:text-[#003D32]">krevos.store@gmail.com</a><br/><a href="tel:+8801951250125" className="hover:text-[#003D32]">01951250125</a></p>
               <p className="text-xs text-zinc-500 mt-2">Delivering all over Bangladesh</p>
             </div>
           </div>
@@ -1548,7 +1548,7 @@ export default function App() {
       {/* cookie */}
       <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-[420px] bg-white border border-[#DDE8E6] rounded-2xl p-4 shadow-2xl flex gap-3 items-center text-sm z-40">
         <span className="w-8 h-8 rounded-full bg-zinc-100 grid place-items-center shrink-0">🍪</span>
-        <p className="text-xs leading-relaxed flex-1">We use cookies to ensure you get the best experience at <b>crevos.store</b>. <a href="#" className="underline">Learn more</a></p>
+        <p className="text-xs leading-relaxed flex-1">We use cookies to ensure you get the best experience at <b>krevos.store</b>. <a href="#" className="underline">Learn more</a></p>
         <button onClick={(e)=> e.currentTarget.closest('div').remove()} className="bg-[#003D32] text-white rounded-full px-4 py-2 text-xs font-semibold shrink-0">Allow</button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-# Krevos — Crevos.Store
+# Krevos — KREVOS.Store
 
 Luxury Menswear | Eid Edit 2026 — Vite + React + Tailwind + Express + MongoDB Atlas
 
@@ -8,7 +8,7 @@ Luxury Menswear | Eid Edit 2026 — Vite + React + Tailwind + Express + MongoDB 
 
 ## Stack
 - Vite + React 19 + Tailwind 4
-- Express 4 + Mongoose 8 + MongoDB Atlas `cluster0.ify2tzs.mongodb.net` (`crevos` db)
+- Express 4 + Mongoose 8 + MongoDB Atlas `cluster0.ify2tzs.mongodb.net` (`krevos` db)
 - Vercel (rewrites `/api/*` → `api/index.js`, SPA fallback to `/index.html`)
 
 ## Run Local
@@ -22,7 +22,7 @@ npm run dev      :: terminal 2 → http://localhost:5173 (proxy /api → 5000)
 ```
 
 ## Env
-Copy `.env.example` → `.env` and set `MONGODB_URI=mongodb+srv://antor1234:KREVOSE@cluster0.ify2tzs.mongodb.net/crevos?...`
+Copy `.env.example` → `.env` and set `MONGODB_URI=mongodb+srv://antor1234:KREVOSE@cluster0.ify2tzs.mongodb.net/krevos?...`
 
 ## Deploy to Vercel
 1. Push to GitHub `Githubantor/Krevos`
