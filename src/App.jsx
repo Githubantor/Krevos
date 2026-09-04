@@ -1642,11 +1642,20 @@ export default function App() {
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-4 overscroll-contain">
               {cart.length===0 ? (
-                <div className="text-center py-16">
+                <div className="text-center py-12">
                   <div className="w-20 h-20 rounded-full bg-zinc-100 grid place-items-center mx-auto"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/></svg></div>
                   <p className="mt-4 font-medium">Your cart is empty</p>
                   <p className="text-sm text-zinc-500">Add KREVOS pieces to get started</p>
                   <button onClick={() => setCartOpen(false)} className="mt-6 bg-[#003D32] text-white rounded-full px-7 py-3 text-sm font-semibold">Continue Shopping</button>
+                  <div className="mt-8 bg-[#F6F8F7] border border-[#E6F0EE] rounded-2xl p-4">
+                    <p className="text-xs font-bold tracking-widest uppercase text-zinc-500">We Accept</p>
+                    <div className="mt-2 flex items-center justify-center gap-2">
+                      <span className="bg-[#003D32] text-white px-3 py-1 rounded-full text-xs font-bold">COD</span>
+                      <span className="bg-[#E2136E] text-white px-3 py-1 rounded-full text-xs font-bold">bKash</span>
+                      <span className="text-xs text-zinc-500">01951250125</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-500 mt-2">Cash on Delivery • bKash Merchant 01951250125 • Cards • Free delivery over Tk 1999</p>
+                  </div>
                 </div>
               ) : cart.map(item => (
                 <div key={`${item.id}-${item.size || ''}`} className="flex gap-4 border border-[#E6F0EE] rounded-2xl p-3">
@@ -1669,6 +1678,13 @@ export default function App() {
               <div className="shrink-0 p-6 border-t bg-[#E6F0EE]/60 space-y-4 max-h-[58vh] overflow-y-auto overscroll-contain">
                 <div className="flex justify-between text-sm"><span>Subtotal</span><span className="font-semibold">Tk {cartTotal.toLocaleString()}.00</span></div>
                 <div className="flex justify-between text-sm"><span>Shipping</span><span className="text-green-600 font-medium">Free over Tk 1,999</span></div>
+                <div className="flex items-center gap-2 bg-white rounded-full px-3 py-2 border border-[#E6F0EE] text-[11px] shadow-sm">
+                  <span className="font-bold text-zinc-700">Payment:</span>
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold border ${cartPayment==='COD' ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white text-zinc-600 border-[#DDE8E6]'}`}>COD</span>
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold border ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white border-[#E2136E]' : 'bg-[#E2136E]/10 text-[#E2136E] border-[#E2136E]/20'}`}>bKash</span>
+                  <span className="ml-auto font-mono text-[10px] bg-[#E2136E]/10 text-[#E2136E] px-2 py-1 rounded-full hidden sm:inline">01951250125</span>
+                  <span className="text-zinc-500 hidden md:inline">• Merchant</span>
+                </div>
                 {!authUser ? (
                   <form onSubmit={async (e) => {
                     e.preventDefault()
@@ -1702,9 +1718,10 @@ export default function App() {
                     <input name="c_phone" required pattern="01[0-9]{9}" placeholder="Phone 01XXXXXXXXX *" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32]" />
                     <input name="c_email" type="email" placeholder="Email (optional)" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32]" />
                     <input name="c_address" required placeholder="Delivery Address — Road, Area, District *" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32]" />
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <button type="button" onClick={()=> setCartPayment('COD')} className={`rounded-full py-2.5 text-xs font-bold border transition ${cartPayment==='COD' ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white border-[#DDE8E6]'}`}>COD</button>
-                      <button type="button" onClick={()=> setCartPayment('bKash')} className={`rounded-full py-2.5 text-xs font-bold border transition ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white border-[#E2136E]' : 'bg-[#E2136E]/5 text-[#E2136E] border-[#E2136E]/20'}`}>bKash</button>
+                    <p className="text-xs font-semibold pt-1">Payment Method <span className="text-red-500">*</span></p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={()=> setCartPayment('COD')} className={`rounded-full py-2.5 text-xs font-bold border transition flex items-center justify-center gap-1.5 ${cartPayment==='COD' ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white border-[#DDE8E6]'}`}><span className={`w-2 h-2 rounded-full ${cartPayment==='COD' ? 'bg-white' : 'bg-zinc-300'}`} /> COD</button>
+                      <button type="button" onClick={()=> setCartPayment('bKash')} className={`rounded-full py-2.5 text-xs font-bold border transition flex items-center justify-center gap-1.5 ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white border-[#E2136E]' : 'bg-[#E2136E]/5 text-[#E2136E] border-[#E2136E]/20'}`}><span className={`w-2 h-2 rounded-full ${cartPayment==='bKash' ? 'bg-white' : 'bg-[#E2136E]'}`} /> bKash</button>
                     </div>
                     {cartPayment==='bKash' && (
                       <div className="bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-2xl p-3 space-y-2">
@@ -1745,9 +1762,10 @@ export default function App() {
                     </div>
                     <label className="text-xs font-semibold">Delivery Address <span className="text-red-500">*</span></label>
                     <input name="address" required defaultValue={authUser.address||''} placeholder="Delivery Address — Road, Area, District *" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32] bg-white" />
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <button type="button" onClick={()=> setCartPayment('COD')} className={`rounded-full py-2.5 text-xs font-bold border transition ${cartPayment==='COD' ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white border-[#DDE8E6]'}`}>COD</button>
-                      <button type="button" onClick={()=> setCartPayment('bKash')} className={`rounded-full py-2.5 text-xs font-bold border transition ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white border-[#E2136E]' : 'bg-[#E2136E]/5 text-[#E2136E] border-[#E2136E]/20'}`}>bKash</button>
+                    <p className="text-xs font-semibold pt-1">Payment Method <span className="text-red-500">*</span></p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={()=> setCartPayment('COD')} className={`rounded-full py-2.5 text-xs font-bold border transition flex items-center justify-center gap-1.5 ${cartPayment==='COD' ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white border-[#DDE8E6]'}`}><span className={`w-2 h-2 rounded-full ${cartPayment==='COD' ? 'bg-white' : 'bg-zinc-300'}`} /> COD</button>
+                      <button type="button" onClick={()=> setCartPayment('bKash')} className={`rounded-full py-2.5 text-xs font-bold border transition flex items-center justify-center gap-1.5 ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white border-[#E2136E]' : 'bg-[#E2136E]/5 text-[#E2136E] border-[#E2136E]/20'}`}><span className={`w-2 h-2 rounded-full ${cartPayment==='bKash' ? 'bg-white' : 'bg-[#E2136E]'}`} /> bKash</button>
                     </div>
                     {cartPayment==='bKash' && (
                       <div className="bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-2xl p-3 space-y-2">
