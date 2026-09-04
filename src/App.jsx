@@ -520,13 +520,13 @@ export default function App() {
             </div>
           </div>
         ) : (
-          <div className="max-w-[1480px] mx-auto px-4 md:px-6 lg:px-8 py-8">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h1 className="font-display text-3xl md:text-4xl leading-none">Admin Dashboard</h1>
-                <p className="text-sm text-zinc-500 mt-2">Password-authenticated • KREVOS.Store • Deep Bottle Green #003D32</p>
+          <div className="max-w-[1480px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+              <div className="min-w-0">
+                <h1 className="font-display text-2xl sm:text-3xl md:text-4xl leading-none">Admin Dashboard</h1>
+                <p className="text-xs sm:text-sm text-zinc-500 mt-1 sm:mt-2">Password-authenticated • KREVOS.Store</p>
               </div>
-              <button onClick={exitAdmin} className="border border-[#DDE8E6] rounded-full px-6 py-2.5 text-sm font-medium hover:bg-white transition">Exit Admin → Store</button>
+              <button onClick={exitAdmin} className="self-start sm:self-auto border border-[#DDE8E6] rounded-full px-5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium hover:bg-white transition whitespace-nowrap">Exit Admin → Store</button>
             </div>
             {/* ── DB Sync Status — auto-loads on any device/browser ── */}
             <div className={`rounded-2xl border p-4 mb-6 flex flex-wrap items-center gap-3 text-xs ${dbSync.mode==='mongo' ? 'bg-green-50 border-green-200' : dbSync.mode==='memory' ? 'bg-amber-50 border-amber-200' : 'bg-white border-[#E6F0EE]'}`}>
@@ -540,11 +540,11 @@ export default function App() {
               <button onClick={()=> syncFromDB()} disabled={dbSync.loading} className="ml-auto bg-[#003D32] text-white rounded-full px-4 py-2 text-xs font-bold hover:bg-[#004D40] disabled:opacity-50 transition">{dbSync.loading ? 'Syncing…' : '↻ Refresh Now'}</button>
               <span className="text-[11px] text-zinc-500 w-full md:w-auto">{orders.length} orders • {springProducts.length + denimProducts.length + joggersProducts.length + hoodiesProducts.length + shacketProducts.length + sweaterProducts.length} products • Every device loads from DB automatically • Try incognito to verify</span>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="bg-white rounded-2xl border border-[#E6F0EE] p-6"><p className="text-xs tracking-widest uppercase font-semibold text-zinc-500">Total Products</p><p className="text-3xl font-bold mt-2 text-[#003D32]">{springProducts.length + denimProducts.length + joggersProducts.length + hoodiesProducts.length + shacketProducts.length + sweaterProducts.length}</p><p className="text-xs text-zinc-500 mt-1">Live in storefront</p></div>
-              <div className="bg-[#003D32] text-white rounded-2xl border border-[#003D32] p-6"><p className="text-xs tracking-widest uppercase font-semibold text-white/60">Total Sell Amount</p><p className="text-3xl font-bold mt-2">Tk {totalSell.toLocaleString()}</p><p className="text-xs text-white/60 mt-1">{orders.length} orders • Lifetime</p></div>
-              <div className="bg-white rounded-2xl border border-[#E6F0EE] p-6"><p className="text-xs tracking-widest uppercase font-semibold text-zinc-500">Total Orders</p><p className="text-3xl font-bold mt-2 text-[#003D32]">{orders.length}</p><p className="text-xs mt-1">{pendingCount>0 ? <span className="text-amber-600 font-semibold">{pendingCount} pending • Tap to confirm</span> : <span className="text-zinc-500">No pending — all confirmed</span>}</p></div>
-              <div className="bg-white rounded-2xl border border-[#E6F0EE] p-6"><p className="text-xs tracking-widest uppercase font-semibold text-zinc-500">Customers</p><p className="text-3xl font-bold mt-2 text-[#003D32]">{new Set(orders.map(o=>o.customer.phone||o.customer.name)).size}</p><p className="text-xs text-zinc-500 mt-1">Unique buyers • Click row → history</p></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <div className="bg-white rounded-2xl border border-[#E6F0EE] p-4 sm:p-6"><p className="text-xs tracking-widest uppercase font-semibold text-zinc-500">Total Products</p><p className="text-2xl sm:text-3xl font-bold mt-2 text-[#003D32]">{springProducts.length + denimProducts.length + joggersProducts.length + hoodiesProducts.length + shacketProducts.length + sweaterProducts.length}</p><p className="text-xs text-zinc-500 mt-1">Live in storefront</p></div>
+              <div className="bg-[#003D32] text-white rounded-2xl border border-[#003D32] p-4 sm:p-6"><p className="text-xs tracking-widest uppercase font-semibold text-white/60">Total Sell Amount</p><p className="text-2xl sm:text-3xl font-bold mt-2">Tk {totalSell.toLocaleString()}</p><p className="text-xs text-white/60 mt-1">{orders.length} orders • Lifetime</p></div>
+              <div className="bg-white rounded-2xl border border-[#E6F0EE] p-4 sm:p-6"><p className="text-xs tracking-widest uppercase font-semibold text-zinc-500">Total Orders</p><p className="text-3xl font-bold mt-2 text-[#003D32]">{orders.length}</p><p className="text-xs mt-1">{pendingCount>0 ? <span className="text-amber-600 font-semibold">{pendingCount} pending • Tap to confirm</span> : <span className="text-zinc-500">No pending — all confirmed</span>}</p></div>
+              <div className="bg-white rounded-2xl border border-[#E6F0EE] p-4 sm:p-6"><p className="text-xs tracking-widest uppercase font-semibold text-zinc-500">Customers</p><p className="text-3xl font-bold mt-2 text-[#003D32]">{new Set(orders.map(o=>o.customer.phone||o.customer.name)).size}</p><p className="text-xs text-zinc-500 mt-1">Unique buyers • Click row → history</p></div>
             </div>
 
             {/* ── Sales Chart ── */}
@@ -792,7 +792,7 @@ export default function App() {
                     </div>
                     <div><label className="text-xs font-semibold">Image URL *</label><input value={newProd.image} onChange={e=>setNewProd({...newProd, image:e.target.value})} required placeholder="https://..." className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
                     <div><label className="text-xs font-semibold">Hover Image URL (optional)</label><input value={newProd.hover} onChange={e=>setNewProd({...newProd, hover:e.target.value})} placeholder="https://... (fallback to image)" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div><label className="text-xs font-semibold">Badge</label><input value={newProd.badge} onChange={e=>setNewProd({...newProd, badge:e.target.value})} placeholder="-15%" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
                       <div><label className="text-xs font-semibold">Fabric</label><input value={newProd.fabric} onChange={e=>setNewProd({...newProd, fabric:e.target.value})} placeholder="Cotton Fleece" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
                       <div><label className="text-xs font-semibold">Color</label><input value={newProd.color} onChange={e=>setNewProd({...newProd, color:e.target.value})} placeholder="Black" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
@@ -871,8 +871,8 @@ export default function App() {
                 }catch(err){ showToast(err.message||"Registration failed") }
                 finally{ if(btn){btn.disabled=false; btn.textContent=orig}}
               }} className="mt-6 space-y-4">
-                <div><label className="text-xs font-semibold">Full Name *</label><input name="name" required placeholder="Rahim Ahmed" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
-                <div className="grid grid-cols-2 gap-3"><div><label className="text-xs font-semibold">Phone *</label><input name="phone" required pattern="01[0-9]{9}" placeholder="01951250125" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div><div><label className="text-xs font-semibold">Email *</label><input name="email" required type="email" placeholder="you@gmail.com" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div></div>
+                <div><label className="text-xs font-semibold">Full Name *</label><input name="name" required placeholder="Rahim Ahmed" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label className="text-xs font-semibold">Phone *</label><input name="phone" required pattern="01[0-9]{9}" placeholder="01951250125" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div><div><label className="text-xs font-semibold">Email *</label><input name="email" required type="email" placeholder="you@gmail.com" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div></div>
                 <div><label className="text-xs font-semibold">Password *</label><input name="pw" required type="password" placeholder="Create password" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
                 <div><label className="text-xs font-semibold">Confirm Password *</label><input name="cpw" required type="password" placeholder="Confirm password" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
                 <label className="flex items-start gap-2 text-xs text-zinc-600"><input type="checkbox" required className="mt-0.5 accent-[#003D32]" /> I agree to KREVOS.Store Terms & Privacy — 1st order offer 15% OFF.</label>
@@ -914,11 +914,11 @@ export default function App() {
       {/* ── Header ── */}
       <header className={`sticky top-0 z-40 bg-[#F6F8F7]/95 backdrop-blur-xl border-b transition-all duration-300 ${scrolled ? 'border-[#DDE8E6] shadow-sm' : 'border-transparent'}`}>
         {/* top row */}
-        <div className="max-w-[1480px] mx-auto px-4 md:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[64px] md:h-[72px] gap-4">
+        <div className="max-w-[1480px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-[56px] sm:h-[64px] md:h-[72px] gap-2 sm:gap-4">
             {/* left: mobile menu + nav desktop */}
-            <div className="flex items-center gap-6 flex-1">
-              <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2 -ml-2">
+            <div className="flex items-center gap-3 sm:gap-6 flex-1">
+              <button onClick={() => setMobileOpen(true)} className="md:hidden p-2 -ml-2 touch-manipulation">
                 <div className="w-6 flex flex-col gap-1.5">
                   <span className="h-[1.5px] bg-[#003D32] w-full block" />
                   <span className="h-[1.5px] bg-[#003D32] w-4 block" />
@@ -926,7 +926,7 @@ export default function App() {
                 </div>
               </button>
 
-              <nav className="hidden lg:flex items-center gap-7 text-[13px] tracking-wide font-medium">
+              <nav className="hidden md:flex items-center gap-4 lg:gap-7 text-[13px] tracking-wide font-medium">
                 <button onClick={() => activeCategory ? closeCategory() : window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-zinc-500 transition relative group cursor-pointer">
                   Home
                   <span className="absolute -bottom-1 left-0 w-0 h-px bg-[#003D32] group-hover:w-full transition-all duration-300" />
@@ -959,18 +959,18 @@ export default function App() {
             </div>
 
             {/* center logo - Bottle Green */}
-            <button onClick={() => activeCategory ? closeCategory() : window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex flex-col items-center leading-none shrink-0 cursor-pointer">
-              <span className="font-brand font-bold tracking-[0.22em] text-[22px] md:text-[26px] text-[#003D32]">KREVOS<span className="font-light text-[#004D40]">.STORE</span></span>
+            <button onClick={() => activeCategory ? closeCategory() : window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex flex-col items-center leading-none shrink-0 cursor-pointer px-1">
+              <span className="font-brand font-bold tracking-[0.18em] sm:tracking-[0.22em] text-[18px] sm:text-[22px] md:text-[26px] text-[#003D32]">KREVOS<span className="font-light text-[#004D40]">.STORE</span></span>
             </button>
 
             {/* right icons */}
-            <div className="flex items-center gap-1 md:gap-2 flex-1 justify-end">
+            <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2 flex-1 justify-end">
               <button onClick={() => setSearchOpen(true)} className="hidden md:flex items-center gap-2 text-sm text-zinc-500 border border-[#DDE8E6] rounded-full pl-4 pr-3 py-2 hover:border-zinc-300 hover:bg-white transition">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 <span className="hidden lg:inline">Search</span>
               </button>
-              <button onClick={() => setSearchOpen(true)} className="md:hidden p-2">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <button onClick={() => setSearchOpen(true)} className="md:hidden p-2 touch-manipulation">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
               </button>
               {authUser ? (
                 <button onClick={() => setCustomerOpen(true)} title={`${authUser.name} • ${authUser.userId}`} className="hidden md:flex items-center gap-2 bg-[#003D32] text-white rounded-full pl-2 pr-3 py-1.5 text-xs font-semibold hover:bg-[#004D40] transition">
@@ -983,11 +983,11 @@ export default function App() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </button>
               )}
-              <button onClick={() => showToast(wishlist.size ? `Wishlist — ${wishlist.size} items at KREVOS.Store` : "Wishlist is empty — Save your favorites")} className="relative grid place-items-center w-10 h-10 rounded-full hover:bg-white border border-transparent hover:border-[#DDE8E6] transition cursor-pointer">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M19 14c1.5-1.6 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 1-4.5 2.5C10.5 4 9.3 3 7.5 3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 3.9 3 5.5l7 7Z"/></svg>
-                {wishlist.size > 0 && <span className="absolute -top-0.5 -right-0.5 bg-[#003D32] text-white text-[10px] w-5 h-5 grid place-items-center rounded-full">{wishlist.size}</span>}
+              <button onClick={() => showToast(wishlist.size ? `Wishlist — ${wishlist.size} items at KREVOS.Store` : "Wishlist is empty — Save your favorites")} className="relative grid place-items-center w-8 h-8 sm:w-10 sm:h-10 rounded-full hover:bg-white border border-transparent hover:border-[#DDE8E6] transition cursor-pointer touch-manipulation">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M19 14c1.5-1.6 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 1-4.5 2.5C10.5 4 9.3 3 7.5 3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 3.9 3 5.5l7 7Z"/></svg>
+                {wishlist.size > 0 && <span className="absolute -top-0.5 -right-0.5 bg-[#003D32] text-white text-[10px] w-4 h-4 sm:w-5 sm:h-5 grid place-items-center rounded-full">{wishlist.size}</span>}
               </button>
-              <button onClick={() => setCartOpen(true)} className="relative flex items-center gap-2 bg-[#003D32] text-white rounded-full pl-3 pr-3 md:pl-4 md:pr-5 py-2.5 text-sm font-medium hover:bg-[#004D40] transition">
+              <button onClick={() => setCartOpen(true)} className="relative flex items-center gap-1 sm:gap-2 bg-[#003D32] text-white rounded-full pl-2.5 pr-2.5 sm:pl-3 sm:pr-3 md:pl-4 md:pr-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium hover:bg-[#004D40] transition touch-manipulation">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 <span className="hidden md:inline">Cart</span>
                 <span className="bg-white text-[#003D32] rounded-full w-5 h-5 grid place-items-center text-xs font-bold">{cartCount}</span>
@@ -1010,21 +1010,21 @@ export default function App() {
           </div>
 
           {/* category hero */}
-          <div className="rounded-[24px] md:rounded-[32px] overflow-hidden bg-white border border-[#E6F0EE] grid md:grid-cols-[1.15fr_0.85fr] mb-8">
-            <div className="p-6 md:p-10 lg:p-12 flex flex-col justify-center">
-              <p className="text-[11px] tracking-[0.22em] uppercase font-semibold text-zinc-500">{categoryConfigs[activeCategory]?.subtitle}</p>
-              <h1 className="font-display text-[32px] md:text-[44px] leading-none mt-2">{categoryConfigs[activeCategory]?.title}</h1>
-              <p className="text-sm text-zinc-600 mt-3 leading-relaxed max-w-[520px]">{categoryConfigs[activeCategory]?.desc}</p>
-              <div className="flex flex-wrap items-center gap-3 mt-6 text-sm">
+          <div className="rounded-[20px] sm:rounded-[24px] md:rounded-[32px] overflow-hidden bg-white border border-[#E6F0EE] grid md:grid-cols-[1.15fr_0.85fr] mb-6 sm:mb-8">
+            <div className="p-4 sm:p-6 md:p-10 lg:p-12 flex flex-col justify-center">
+              <p className="text-[10px] sm:text-[11px] tracking-[0.22em] uppercase font-semibold text-zinc-500">{categoryConfigs[activeCategory]?.subtitle}</p>
+              <h1 className="font-display text-[26px] sm:text-[32px] md:text-[44px] leading-none mt-2">{categoryConfigs[activeCategory]?.title}</h1>
+              <p className="text-xs sm:text-sm text-zinc-600 mt-3 leading-relaxed max-w-[520px]">{categoryConfigs[activeCategory]?.desc}</p>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 sm:mt-6 text-xs sm:text-sm">
                 <span className="inline-flex items-center gap-2 bg-[#E6F0EE] text-[#003D32] px-3 py-1.5 rounded-full text-xs font-semibold border border-[#DDE8E6]">✓ In Stock & Ready to Ship</span>
-                <span className="text-zinc-500">Free delivery over Tk 1999</span>
+                <span className="text-zinc-500 text-xs">Free delivery over Tk 1999</span>
               </div>
-              <div className="flex gap-3 mt-8">
-                <button onClick={closeCategory} className="inline-flex items-center gap-2 border border-[#DDE8E6] rounded-full px-6 py-3 text-sm font-medium hover:bg-[#002A22] hover:text-white hover:border-[#003D32] transition cursor-pointer">← Back to Home</button>
-                <button onClick={() => document.getElementById('category-grid')?.scrollIntoView({behavior:'smooth'})} className="bg-[#003D32] text-white rounded-full px-8 py-3 text-sm font-semibold hover:bg-[#004D40] transition cursor-pointer">Shop Now</button>
+              <div className="flex flex-col sm:flex-row gap-3 mt-6 sm:mt-8">
+                <button onClick={closeCategory} className="inline-flex items-center justify-center gap-2 border border-[#DDE8E6] rounded-full px-6 py-3 text-sm font-medium hover:bg-[#002A22] hover:text-white hover:border-[#003D32] transition cursor-pointer">← Back to Home</button>
+                <button onClick={() => document.getElementById('category-grid')?.scrollIntoView({behavior:'smooth'})} className="bg-[#003D32] text-white rounded-full px-8 py-3 text-sm font-semibold hover:bg-[#004D40] transition cursor-pointer text-center justify-center inline-flex">Shop Now</button>
               </div>
             </div>
-            <div className="relative h-[280px] md:h-auto min-h-[380px] bg-[#f5f1ec] overflow-hidden">
+            <div className="relative h-[220px] sm:h-[280px] md:h-auto md:min-h-[380px] bg-[#f5f1ec] overflow-hidden">
               <img src={categoryConfigs[activeCategory]?.hero} alt={categoryConfigs[activeCategory]?.title} className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur rounded-full px-4 py-2 text-xs font-semibold">krevos.store • Authentic</div>
             </div>
@@ -1056,7 +1056,7 @@ export default function App() {
               <button onClick={closeCategory} className="mt-4 bg-[#003D32] text-white rounded-full px-6 py-2 text-sm font-semibold hover:bg-[#004D40] transition">Back to Home</button>
             </div>
           ) : (
-          <div id="category-grid" className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+          <div id="category-grid" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-5">
             {getCategoryProducts(activeCategory).map((p) => (
               <article key={p.id} className="group bg-white rounded-2xl overflow-hidden border border-[#E6F0EE] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
                 <div className="relative aspect-[4/5] overflow-hidden bg-[#f5f1ec]">
@@ -1069,7 +1069,7 @@ export default function App() {
                   <button onClick={() => toggleWishlist(p.id)} className={`absolute top-3 right-3 w-8 h-8 rounded-full grid place-items-center backdrop-blur border transition cursor-pointer ${wishlist.has(p.id) ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white/90 border-white hover:bg-white'}`}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill={wishlist.has(p.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6"><path d="M19 14c1.5-1.6 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 1-4.5 2.5C10.5 4 9.3 3 7.5 3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 3.9 3 5.5l7 7Z"/></svg>
                   </button>
-                  <div className="absolute bottom-0 inset-x-0 p-2.5 translate-y-full group-hover:translate-y-0 transition duration-300 flex gap-2">
+                  <div className="absolute bottom-0 inset-x-0 p-2.5 translate-y-0 md:translate-y-full md:group-hover:translate-y-0 transition duration-300 flex gap-2">
                     <button onClick={() => addToCart({...p, size: orderSize})} className="flex-1 bg-white text-[#003D32] text-xs font-semibold py-2.5 rounded-full hover:bg-zinc-100 transition shadow">Add to Cart</button>
                     <button onClick={() => setOrderProduct(p)} className="flex-1 bg-[#003D32] text-white text-xs font-semibold py-2.5 rounded-full hover:bg-[#004D40] transition shadow">Order Now</button>
                   </div>
@@ -1127,7 +1127,7 @@ export default function App() {
         <>
       {/* ── Hero Slider ── */}
       <section ref={heroRef} className="relative overflow-hidden bg-[#efe9e3]">
-        <div className="relative h-[62vh] md:h-[78vh] lg:h-[84vh] min-h-[480px] max-h-[880px]">
+        <div className="relative h-[52vh] sm:h-[58vh] md:h-[70vh] lg:h-[84vh] min-h-[380px] sm:min-h-[440px] md:min-h-[520px] max-h-[880px]">
           {slides.map((s, idx) => (
             <div
               key={s.id}
@@ -1139,18 +1139,18 @@ export default function App() {
                 className={`absolute inset-0 w-full h-full object-cover object-center transition-transform duration-[8000ms] ${idx === currentSlide ? 'scale-105' : 'scale-100'}`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-              <div className={`absolute inset-0 flex items-center ${s.align === 'center' ? 'justify-center text-center' : s.align === 'right' ? 'justify-end text-right' : 'justify-start text-left'} px-6 md:px-12 lg:px-20`}>
+              <div className={`absolute inset-0 flex items-center ${s.align === 'center' ? 'justify-center text-center' : s.align === 'right' ? 'justify-end text-right' : 'justify-start text-left'} px-4 sm:px-6 md:px-12 lg:px-20`}>
                 <div className={`max-w-[560px] text-white ${idx === currentSlide ? 'animate-fadeInUp' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '200ms' }}>
                   <p className="text-[11px] md:text-xs tracking-[0.28em] uppercase font-semibold mb-3 md:mb-4 bg-white/15 backdrop-blur inline-flex px-3 py-1.5 rounded-full border border-white/20">
                     {s.subtitle} • krevos.store
                   </p>
-                  <h1 className="font-display font-medium leading-[0.9] text-[38px] md:text-[56px] lg:text-[64px] whitespace-pre-line drop-shadow-lg">
+                  <h1 className="font-display font-medium leading-[0.9] text-[30px] sm:text-[36px] md:text-[48px] lg:text-[64px] whitespace-pre-line drop-shadow-lg">
                     {s.title}
                   </h1>
-                  <p className="mt-3 md:mt-4 text-sm md:text-[15px] leading-relaxed text-white/90 max-w-[420px] mx-auto md:mx-0">
+                  <p className="mt-3 md:mt-4 text-xs sm:text-sm md:text-[15px] leading-relaxed text-white/90 max-w-[320px] sm:max-w-[420px] mx-auto md:mx-0">
                     {s.desc}
                   </p>
-                  <button onClick={() => openCategory(s.targetId)} className="inline-flex items-center gap-2 mt-6 md:mt-8 bg-white text-[#003D32] px-7 md:px-8 py-3.5 md:py-4 rounded-full text-sm font-semibold hover:bg-zinc-100 transition group cursor-pointer">
+                  <button onClick={() => openCategory(s.targetId)} className="inline-flex items-center gap-2 mt-5 sm:mt-6 md:mt-8 bg-white text-[#003D32] px-6 sm:px-7 md:px-8 py-3 sm:py-3.5 md:py-4 rounded-full text-xs sm:text-sm font-semibold hover:bg-zinc-100 transition group cursor-pointer">
                     {s.cta}
                     <span className="w-7 h-7 rounded-full bg-[#003D32] text-white grid place-items-center group-hover:translate-x-0.5 transition-transform">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -1162,11 +1162,11 @@ export default function App() {
           ))}
 
           {/* controls */}
-          <button onClick={() => setCurrentSlide(s => (s - 1 + slides.length) % slides.length)} className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 backdrop-blur grid place-items-center hover:bg-white transition shadow-lg">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m15 18-6-6 6-6"/></svg>
+          <button onClick={() => setCurrentSlide(s => (s - 1 + slides.length) % slides.length)} className="absolute left-2 sm:left-4 md:left-6 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/90 backdrop-blur grid place-items-center hover:bg-white transition shadow-lg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m15 18-6-6 6-6"/></svg>
           </button>
-          <button onClick={() => setCurrentSlide(s => (s + 1) % slides.length)} className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 backdrop-blur grid place-items-center hover:bg-white transition shadow-lg">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m9 18 6-6-6-6"/></svg>
+          <button onClick={() => setCurrentSlide(s => (s + 1) % slides.length)} className="absolute right-2 sm:right-4 md:right-6 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white/90 backdrop-blur grid place-items-center hover:bg-white transition shadow-lg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m9 18 6-6-6-6"/></svg>
           </button>
 
           {/* dots + progress */}
@@ -1210,9 +1210,9 @@ export default function App() {
             <p className="text-sm text-zinc-500 mt-1">Exclusive selections will appear here — krevos.store</p>
           </div>
         ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
           {categories.map((c) => (
-            <button key={c.id} onClick={() => openCategory(c.id)} className="group relative rounded-[20px] overflow-hidden aspect-[4/5] md:aspect-[3/4] bg-zinc-100 text-left w-full cursor-pointer">
+            <button key={c.id} onClick={() => openCategory(c.id)} className="group relative rounded-[20px] overflow-hidden aspect-[4/5] sm:aspect-[3/4] md:aspect-[3/4] bg-zinc-100 text-left w-full cursor-pointer touch-manipulation">
               <img src={c.image} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
               <div className="absolute bottom-0 p-4 md:p-6 text-white">
@@ -1242,9 +1242,9 @@ export default function App() {
           </div>
         ) : (
         <>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-5">
           {springProducts.map((p) => (
-            <article key={p.id} className="group bg-white rounded-2xl overflow-hidden border border-[#E6F0EE] hover:shadow-lg transition">
+            <article key={p.id} className="group bg-white rounded-2xl overflow-hidden border border-[#E6F0EE] hover:shadow-lg transition flex flex-col">
               <div className="relative aspect-[4/5] overflow-hidden bg-[#f6f6f6]">
                 <img src={p.image} alt={p.name} className="absolute inset-0 w-full h-full object-cover group-hover:opacity-0 transition duration-500" />
                 <img src={p.hover} alt="" className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition duration-500" />
@@ -1252,8 +1252,11 @@ export default function App() {
                 <button onClick={() => toggleWishlist(p.id)} className={`absolute top-3 right-3 w-8 h-8 rounded-full grid place-items-center backdrop-blur border ${wishlist.has(p.id) ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white/90 border-white'}`}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill={wishlist.has(p.id)?"currentColor":"none"} stroke="currentColor" strokeWidth="1.6"><path d="M19 14c1.5-1.6 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 1-4.5 2.5C10.5 4 9.3 3 7.5 3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 3.9 3 5.5l7 7Z"/></svg>
                 </button>
-                <button onClick={() => addToCart(p)} className="absolute bottom-3 left-3 right-3 bg-white text-[#003D32] text-xs font-semibold py-2.5 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition duration-300 shadow-lg hover:bg-[#002A22] hover:text-white">
+                <button onClick={() => addToCart(p)} className="absolute bottom-3 left-3 right-3 bg-white text-[#003D32] text-xs font-semibold py-2.5 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition duration-300 shadow-lg hover:bg-[#002A22] hover:text-white hidden sm:block">
                   Quick Add — Tk {p.price.toLocaleString()}
+                </button>
+                <button onClick={() => addToCart(p)} className="sm:hidden absolute bottom-3 left-3 right-3 bg-white/95 text-[#003D32] text-[11px] font-bold py-2 rounded-full shadow-lg border border-white">
+                  Add — Tk {p.price.toLocaleString()}
                 </button>
               </div>
               <div className="p-3 md:p-4">
@@ -1321,8 +1324,8 @@ export default function App() {
       )}
 
       {/* ── Features ── */}
-      <section className="max-w-[1480px] mx-auto px-4 md:px-6 lg:px-8 pt-10 md:pt-14">
-        <div className="grid md:grid-cols-3 gap-4">
+      <section className="max-w-[1480px] mx-auto px-4 md:px-6 lg:px-8 pt-8 sm:pt-10 md:pt-14">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
           {[
             { title:"Delivering All Over Bangladesh", desc:"Free delivery above Tk 1,999 • Same day in Dhaka", icon:"M5 8h14M5 8a2 2 0 1 1 0 4h14a2 2 0 1 0 0-4H5Z" },
             { title:"100% Safe & Secure Checkout", desc:"SSL encrypted • bKash, Nagad, Cards & COD", icon:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" },
@@ -1342,17 +1345,17 @@ export default function App() {
       </section>
 
       {/* ── Newsletter ── Deep Bottle Green */}
-      <section className="max-w-[1480px] mx-auto px-4 md:px-6 lg:px-8 pt-10 md:pt-14">
-        <div className="rounded-[24px] bg-[#003D32] text-white p-6 md:p-10 lg:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] relative overflow-hidden">
+      <section className="max-w-[1480px] mx-auto px-4 md:px-6 lg:px-8 pt-8 sm:pt-10 md:pt-14">
+        <div className="rounded-[24px] sm:rounded-[28px] bg-[#003D32] text-white p-5 sm:p-6 md:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8 border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] relative overflow-hidden">
           {/* subtle gold accent line */}
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C5A880]/30 to-transparent" />
-          <div>
-            <h3 className="font-display text-[28px] md:text-[32px] leading-none">Join KREVOS Town</h3>
-            <p className="text-sm text-white/70 mt-2 max-w-[480px]">Get 15% off your first order + early access to Eid, Spring & Winter drops. No spam — only luxury updates from krevos.store</p>
+          <div className="text-center lg:text-left">
+            <h3 className="font-display text-[24px] sm:text-[28px] md:text-[32px] leading-none">Join KREVOS Town</h3>
+            <p className="text-xs sm:text-sm text-white/70 mt-2 max-w-[480px] mx-auto lg:mx-0">Get 15% off your first order + early access to Eid, Spring & Winter drops. No spam — only luxury updates from krevos.store</p>
           </div>
-          <form onSubmit={e => { e.preventDefault(); showToast("Welcome to KREVOS Town — check your email!"); e.currentTarget.reset() }} className="flex w-full lg:w-auto gap-2 max-w-[520px] grow">
-            <input required type="email" placeholder="Enter your email" className="flex-1 bg-white text-[#003D32] rounded-full px-6 py-4 text-sm outline-none placeholder:text-zinc-400 focus:ring-2 focus:ring-[#C5A880]/40" />
-            <button className="bg-white text-[#003D32] hover:bg-[#E6F0EE] transition rounded-full px-7 py-4 text-sm font-semibold shrink-0 shadow-lg">Subscribe</button>
+          <form onSubmit={e => { e.preventDefault(); showToast("Welcome to KREVOS Town — check your email!"); e.currentTarget.reset() }} className="flex flex-col sm:flex-row w-full lg:w-auto gap-3 max-w-[520px] lg:grow">
+            <input required type="email" placeholder="Enter your email" className="flex-1 min-w-0 bg-white text-[#003D32] rounded-full px-5 sm:px-6 py-3.5 sm:py-4 text-sm outline-none placeholder:text-zinc-400 focus:ring-2 focus:ring-[#C5A880]/40" />
+            <button className="bg-white text-[#003D32] hover:bg-[#E6F0EE] transition rounded-full px-6 sm:px-7 py-3.5 sm:py-4 text-sm font-semibold shrink-0 shadow-lg whitespace-nowrap">Subscribe</button>
           </form>
         </div>
       </section>
@@ -1362,8 +1365,8 @@ export default function App() {
       {/* ── Footer ── Deep Bottle Green */}
       <footer className="mt-10 md:mt-14 bg-[#003D32] text-white/70 border-t border-white/5 relative">
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C5A880]/20 to-transparent" />
-        <div className="max-w-[1480px] mx-auto px-4 md:px-6 lg:px-8 py-10 md:py-14">
-          <div className="grid md:grid-cols-12 gap-8 md:gap-12">
+        <div className="max-w-[1480px] mx-auto px-4 md:px-6 lg:px-8 py-8 sm:py-10 md:py-14">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-8 lg:gap-12">
             <div className="md:col-span-4">
               <p className="font-brand font-bold tracking-[0.22em] text-white text-xl">KREVOS<span className="font-light">.STORE</span></p>
               <p className="text-sm leading-relaxed mt-4 max-w-[360px]">Luxury menswear redefined in Bangladesh. From ThreadBare essentials to ornate Eid panjabis — KREVOS.Store crafts timeless pieces for the modern gentleman.</p>
@@ -1414,10 +1417,10 @@ export default function App() {
 
       {/* ── Help & Info Modal — usable pages ── */}
       {infoPage && (
-        <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[75] flex items-center justify-center p-3 sm:p-4">
           <div onClick={() => setInfoPage(null)} className="fixed inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
-          <div className="relative bg-white rounded-[24px] max-w-[640px] w-full max-h-[90vh] overflow-auto shadow-2xl animate-scaleIn">
-            <div className="sticky top-0 bg-white border-b p-6 flex items-center justify-between rounded-t-[24px]">
+          <div className="relative bg-white rounded-[24px] w-full max-w-[640px] max-h-[90vh] overflow-auto shadow-2xl animate-scaleIn">
+            <div className="sticky top-0 bg-white border-b p-4 sm:p-6 flex items-center justify-between rounded-t-[24px] z-10">
               <div>
                 <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">KREVOS.Store • Help & Info</p>
                 <h3 className="font-display text-xl leading-none mt-1">
@@ -1526,17 +1529,17 @@ export default function App() {
       {/* ── Cart Drawer ── */}
       {/* ── Customer Login (user icon) ── */}
       {customerOpen && (
-        <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[75] flex items-center justify-center p-3 sm:p-4">
           <div onClick={() => setCustomerOpen(false)} className="fixed inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
-          <div className="relative bg-white rounded-[24px] max-w-[420px] w-full shadow-2xl animate-scaleIn overflow-hidden">
-            <div className="p-6 border-b flex items-center justify-between">
+          <div className="relative bg-white rounded-[24px] w-full max-w-[420px] max-h-[90vh] overflow-auto shadow-2xl animate-scaleIn">
+            <div className="sticky top-0 bg-white p-4 sm:p-6 border-b flex items-center justify-between rounded-t-[24px] z-10">
               <div>
                 <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">KREVOS.Store</p>
                 <h3 className="font-display text-xl leading-none mt-1">{customerMode === "login" ? "Customer Login" : "Create Account"}</h3>
               </div>
               <button onClick={() => setCustomerOpen(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center hover:bg-zinc-200 transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
             </div>
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {authUser ? (
                 <div className="space-y-4">
                   <div className="bg-[#F6F8F7] rounded-2xl p-5 border border-[#E6F0EE] text-center">
@@ -1595,10 +1598,10 @@ export default function App() {
                       </>
                     ) : (
                       <>
-                        <div><label className="text-xs font-semibold">Full Name *</label><input name="name" required placeholder="Rahim Ahmed" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
-                        <div className="grid grid-cols-2 gap-3"><div><label className="text-xs font-semibold">Phone *</label><input name="phone" required pattern="01[0-9]{9}" placeholder="01951250125" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div><div><label className="text-xs font-semibold">Email *</label><input name="email" required type="email" placeholder="you@gmail.com" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div></div>
-                        <div><label className="text-xs font-semibold">Address</label><input name="address" placeholder="Road, Area, District" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
-                        <div className="grid grid-cols-2 gap-3"><div><label className="text-xs font-semibold">Password *</label><input name="password" type="password" required placeholder="Create password" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div><div><label className="text-xs font-semibold">Confirm *</label><input name="cpassword" type="password" required placeholder="Confirm" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div></div>
+                        <div><label className="text-xs font-semibold">Full Name *</label><input name="name" required placeholder="Rahim Ahmed" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label className="text-xs font-semibold">Phone *</label><input name="phone" required pattern="01[0-9]{9}" placeholder="01951250125" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div><div><label className="text-xs font-semibold">Email *</label><input name="email" required type="email" placeholder="you@gmail.com" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div></div>
+                        <div><label className="text-xs font-semibold">Address</label><input name="address" placeholder="Road, Area, District" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label className="text-xs font-semibold">Password *</label><input name="password" type="password" required placeholder="Create password" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div><div><label className="text-xs font-semibold">Confirm *</label><input name="cpassword" type="password" required placeholder="Confirm" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div></div>
                         <label className="flex items-start gap-2 text-xs text-zinc-600"><input type="checkbox" required className="mt-0.5 accent-[#003D32]" /> I agree to KREVOS.Store Terms & Privacy.</label>
                       </>
                     )}
@@ -1748,19 +1751,19 @@ export default function App() {
 
       {/* ── Quick Order Modal — Individual Collection Order Page ── */}
       {orderProduct && (
-        <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[75] flex items-center justify-center p-3 sm:p-4">
           <div onClick={() => setOrderProduct(null)} className="fixed inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
-          <div className="relative bg-white rounded-[24px] max-w-[560px] w-full max-h-[90vh] overflow-auto shadow-2xl animate-scaleIn">
-            <div className="sticky top-0 bg-white border-b p-6 flex items-center justify-between rounded-t-[24px]">
+          <div className="relative bg-white rounded-[24px] w-full max-w-[560px] max-h-[90vh] overflow-auto shadow-2xl animate-scaleIn">
+            <div className="sticky top-0 bg-white border-b p-4 sm:p-6 flex items-center justify-between rounded-t-[24px] z-10">
               <div>
                 <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-zinc-500">KREVOS.Store • Order Now</p>
                 <h3 className="font-display text-xl leading-none mt-1">Quick Order</h3>
               </div>
               <button onClick={() => setOrderProduct(null)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center hover:bg-zinc-200 transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
             </div>
-            <div className="p-6">
-              <div className="flex gap-4 bg-[#E6F0EE]/60 rounded-2xl p-4 border border-[#E6F0EE]">
-                <img src={orderProduct.image} alt={orderProduct.name} className="w-24 h-24 rounded-xl object-cover bg-white" />
+            <div className="p-4 sm:p-6">
+              <div className="flex gap-3 sm:gap-4 bg-[#E6F0EE]/60 rounded-2xl p-3 sm:p-4 border border-[#E6F0EE]">
+                <img src={orderProduct.image} alt={orderProduct.name} className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover bg-white shrink-0" />
                 <div className="flex-1">
                   <h4 className="text-sm font-semibold leading-tight">{orderProduct.name}</h4>
                   <p className="text-xs text-zinc-500 mt-1">{orderProduct.fabric || orderProduct.color} • krevos.store</p>
@@ -1844,14 +1847,14 @@ export default function App() {
                         <label className="text-xs font-semibold">Full Name <span className="text-red-500">*</span></label>
                         <input name="c_name" required placeholder="e.g. Rahim Ahmed" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="text-xs font-semibold">Phone <span className="text-red-500">*</span></label>
-                          <input name="c_phone" required pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
+                          <input name="c_phone" required pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
                         </div>
                         <div>
                           <label className="text-xs font-semibold">Email <span className="text-zinc-400 font-normal">(optional)</span></label>
-                          <input name="c_email" type="email" placeholder="you@gmail.com" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
+                          <input name="c_email" type="email" placeholder="you@gmail.com" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-4 sm:px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
                         </div>
                       </div>
                       <div>

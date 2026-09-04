@@ -16,9 +16,13 @@
   --bottle-soft: #E6F0EE;
 }
 
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { overflow-x: hidden; }
 * {
   font-family: 'Inter', system-ui, sans-serif;
 }
+button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+img { max-width: 100%; height: auto; }
 
 ::selection {
   background: #003D32;
