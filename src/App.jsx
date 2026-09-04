@@ -1127,7 +1127,7 @@ export default function App() {
         <>
       {/* ── Hero Slider ── */}
       <section ref={heroRef} className="relative overflow-hidden bg-[#efe9e3]">
-        <div className="relative h-[52vh] sm:h-[58vh] md:h-[70vh] lg:h-[84vh] min-h-[380px] sm:min-h-[440px] md:min-h-[520px] max-h-[880px]">
+        <div className="relative h-[58vh] sm:h-[62vh] md:h-[64vh] lg:h-[84vh] min-h-[420px] sm:min-h-[480px] md:min-h-[520px] lg:min-h-[560px] max-h-[760px] lg:max-h-[880px]">
           {slides.map((s, idx) => (
             <div
               key={s.id}
@@ -1136,10 +1136,11 @@ export default function App() {
               <img
                 src={s.image}
                 alt={s.title}
-                className={`absolute inset-0 w-full h-full object-cover object-center transition-transform duration-[8000ms] ${idx === currentSlide ? 'scale-105' : 'scale-100'}`}
+                loading={idx===0 ? "eager" : "lazy"}
+                className={`absolute inset-0 w-full h-full object-cover object-top sm:object-[50%_30%] md:object-center transition-transform duration-[8000ms] will-change-transform ${idx === currentSlide ? 'scale-[1.03] sm:scale-105' : 'scale-100'}`}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-              <div className={`absolute inset-0 flex items-center ${s.align === 'center' ? 'justify-center text-center' : s.align === 'right' ? 'justify-end text-right' : 'justify-start text-left'} px-4 sm:px-6 md:px-12 lg:px-20`}>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent sm:from-black/55 sm:via-black/10" />
+              <div className={`absolute inset-0 flex items-center ${s.align === 'center' ? 'justify-center text-center' : s.align === 'right' ? 'justify-center md:justify-end text-center md:text-right' : 'justify-center md:justify-start text-center md:text-left'} px-4 sm:px-6 md:px-12 lg:px-20`}>
                 <div className={`max-w-[560px] text-white ${idx === currentSlide ? 'animate-fadeInUp' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '200ms' }}>
                   <p className="text-[11px] md:text-xs tracking-[0.28em] uppercase font-semibold mb-3 md:mb-4 bg-white/15 backdrop-blur inline-flex px-3 py-1.5 rounded-full border border-white/20">
                     {s.subtitle} • krevos.store
