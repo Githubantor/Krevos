@@ -31,9 +31,10 @@ router.post('/', async (req,res)=>{
     if(total==null) return res.status(400).json({error:'total required'})
     const pm = (paymentMethod==='bKash' || paymentMethod==='Bkash') ? 'bKash' : 'COD'
     const pStatus = pm==='bKash' ? 'Paid' : 'Pending'
+    // Direct bKash Send Money: TrxID/number optional — customer will be redirected to bKash app
     if(pm==='bKash'){
-      if(!bkashTrxId || String(bkashTrxId).trim().length < 6) return res.status(400).json({error:'bKash Transaction ID (TrxID) required — at least 6 characters'})
-      if(bkashNumber && !/^01[0-9]{9}$/.test(String(bkashNumber))) return res.status(400).json({error:'bKash number must be 01XXXXXXXXX'})
+      if(bkashNumber && String(bkashNumber).trim() && !/^01[0-9]{9}$/.test(String(bkashNumber))) return res.status(400).json({error:'bKash number must be 01XXXXXXXXX'})
+      if(bkashTrxId && String(bkashTrxId).trim() && String(bkashTrxId).trim().length < 4) return res.status(400).json({error:'bKash TrxID too short'})
     }
     // enforce login: userId OR customer.email must map to existing user
     const uid = userId || customer.userId || null

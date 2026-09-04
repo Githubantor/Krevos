@@ -4,6 +4,10 @@ import { api } from './api.js'
 // ─── ADMIN ─── (password-only login)
 const ADMIN_PASSWORD = "admin123" // ← change this password as needed
 
+// ─── bKash — direct Send Money merchant
+const BKASH_MERCHANT = "01951250125" // Personal bKash — customer sends directly here
+const BKASH_MERCHANT_NAME = "KREVOS.Store"
+
 // ─── DATA ───
 const slides = [
   {
@@ -445,6 +449,45 @@ export default function App() {
   }, [activeCategory])
 
   const showToast = (msg) => setToast(msg)
+  // ── bKash direct Send Money — opens bKash app on phone, fallback to instructions on desktop
+  const openBkashSendMoney = (amount) => {
+    const amt = String(Math.round(Number(amount) || 0))
+    const num = BKASH_MERCHANT
+    const ua = navigator.userAgent || ''
+    const isAndroid = /Android/i.test(ua)
+    const isIOS = /iPhone|iPad|iPod/i.test(ua)
+    // Copy merchant number to clipboard for convenience
+    try { navigator.clipboard?.writeText(num) } catch {}
+    if (isAndroid) {
+      // Try bKash app via intent — Send Money screen with number & amount
+      const intent = `intent://sendMoney#Intent;scheme=bkash;package=com.bKash.customerapp;S.receiver=${num};S.amount=${amt};S.reference=KREVOS;end`
+      window.location.href = intent
+      // fallback after 1.5s if app not installed — open bKash web + instructions
+      setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+          showToast(`bKash: Send Tk ${Number(amt).toLocaleString()} to ${num} — then return`)
+          window.open(`https://www.bkash.com/`, '_blank')
+        }
+      }, 1500)
+      return true
+    }
+    if (isIOS) {
+      const scheme = `bKash://sendMoney?number=${num}&amount=${amt}&reference=KREVOS`
+      window.location.href = scheme
+      setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+          showToast(`bKash: Send Tk ${Number(amt).toLocaleString()} to ${num}`)
+          window.open(`https://apps.apple.com/app/bkash/id1358563567`, '_blank')
+        }
+      }, 1500)
+      return true
+    }
+    // Desktop / fallback — USSD dial and copy
+    showToast(`bKash Merchant ${num} copied — Send Tk ${Number(amt).toLocaleString()} via bKash App`)
+    // Try tel: for desktop that supports it, else just copy
+    try { window.open(`tel:*247*1*${num}*${amt}%23`, '_self') } catch {}
+    return false
+  }
   const scrollToSection = (id) => {
     const el = document.getElementById(id)
     if (el) {
@@ -1699,17 +1742,15 @@ export default function App() {
                     if (!address) { showToast('Please enter delivery address'); return }
                     let payment=null
                     if (cartPayment==='bKash') {
-                      const bn=fd.get('bkash_number')?.toString().trim()||''
-                      const trx=fd.get('bkash_trx')?.toString().trim()||''
-                      if(!bn || !/^01[0-9]{9}$/.test(bn)){ showToast('bKash number must be 01XXXXXXXXX'); return }
-                      if(!trx || trx.length<6){ showToast('Enter valid bKash TrxID'); return }
-                      payment={paymentMethod:'bKash', bkashNumber:bn, bkashTrxId:trx}
+                      payment={paymentMethod:'bKash'}
                     } else payment={paymentMethod:'COD'}
                     const customer = { name, phone, email, address }
                     try {
                       const order = await createOrder(customer, [...cart], cartTotal, payment)
-                      showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • ${payment.paymentMethod==='bKash' ? 'bKash Paid' : 'COD'} • Guest`)
+                      showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • ${payment.paymentMethod==='bKash' ? 'bKash → Send Money' : 'COD'} • Guest`)
+                      const isBkash = payment.paymentMethod==='bKash'
                       setCart([]); setCartOpen(false); setCartPayment('COD')
+                      if (isBkash) setTimeout(()=> openBkashSendMoney(cartTotal), 700)
                     } catch(err) { showToast(err.message || 'Order failed') }
                   }} className="space-y-3 bg-white rounded-2xl p-4 border border-[#E6F0EE]">
                     <p className="text-xs font-bold text-[#003D32]">First Order — Your Information Required <span className="text-red-500">*</span></p>
@@ -1724,14 +1765,17 @@ export default function App() {
                       <button type="button" onClick={()=> setCartPayment('bKash')} className={`rounded-full py-2.5 text-xs font-bold border transition flex items-center justify-center gap-1.5 ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white border-[#E2136E]' : 'bg-[#E2136E]/5 text-[#E2136E] border-[#E2136E]/20'}`}><span className={`w-2 h-2 rounded-full ${cartPayment==='bKash' ? 'bg-white' : 'bg-[#E2136E]'}`} /> bKash</button>
                     </div>
                     {cartPayment==='bKash' && (
-                      <div className="bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-2xl p-3 space-y-2">
-                        <div className="flex items-center gap-2 text-[11px] font-bold text-[#E2136E]"><span className="bg-[#E2136E] text-white px-2 py-0.5 rounded text-[10px]">bKash</span> Merchant 01951250125 • Tk {cartTotal.toLocaleString()}</div>
-                        <p className="text-[10px] text-zinc-600">Send Money to 01951250125 then enter TrxID below</p>
-                        <input name="bkash_number" required={cartPayment==='bKash'} pattern="01[0-9]{9}" placeholder="Your bKash Number 01XXXXXXXXX *" className="w-full border border-[#E2136E]/20 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#E2136E] bg-white" />
-                        <input name="bkash_trx" required={cartPayment==='bKash'} placeholder="bKash TrxID *" className="w-full border border-[#E2136E]/20 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#E2136E] bg-white" />
+                      <div className="bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-2xl p-3 space-y-3">
+                        <div className="flex items-center gap-2 text-[11px] font-bold text-[#E2136E]"><span className="bg-[#E2136E] text-white px-2 py-0.5 rounded text-[10px]">bKash</span> Send to {BKASH_MERCHANT} • Tk {cartTotal.toLocaleString()}</div>
+                        <p className="text-[11px] leading-relaxed text-zinc-700">Tap <b>Place Order</b> → you’ll be moved directly to <b>bKash Send Money</b> (to <b className="text-[#E2136E]">{BKASH_MERCHANT}</b>, Tk {cartTotal.toLocaleString()}). Complete Send Money in bKash app.</p>
+                        <div className="flex gap-2">
+                          <a href={`tel:*247*1*${BKASH_MERCHANT}*${cartTotal}%23`} className="flex-1 bg-white border border-[#E2136E]/20 rounded-full py-2 text-center text-xs font-bold text-[#E2136E] hover:bg-[#E2136E]/10 transition">Dial *247#</a>
+                          <button type="button" onClick={()=> openBkashSendMoney(cartTotal)} className="flex-1 bg-[#E2136E] text-white rounded-full py-2 text-xs font-bold hover:bg-[#C0105E] transition">Open bKash App</button>
+                        </div>
+                        <p className="text-[10px] text-zinc-500 text-center">No number needed — merchant copied. Amount auto-filled.</p>
                       </div>
                     )}
-                    <button type="submit" className={`w-full rounded-full py-3 font-semibold transition ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white hover:bg-[#C0105E]' : 'bg-[#003D32] text-white hover:bg-[#004D40]'}`}>Place Order • Tk {cartTotal.toLocaleString()}.00 — {cartPayment==='bKash' ? 'bKash' : 'Guest COD'}</button>
+                    <button type="submit" className={`w-full rounded-full py-3 font-semibold transition ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white hover:bg-[#C0105E]' : 'bg-[#003D32] text-white hover:bg-[#004D40]'}`}>Place Order • Tk {cartTotal.toLocaleString()}.00 — {cartPayment==='bKash' ? 'bKash → Send' : 'Guest COD'}</button>
                     <p className="text-[11px] text-center text-zinc-500">{cartPayment==='bKash' ? 'bKash Paid • ' : 'Cash on Delivery • '}Free delivery over Tk 1999</p>
                     <p className="text-[11px] text-center text-zinc-400">Want 15% OFF? <button type="button" onClick={()=>{setCartOpen(false); setTimeout(()=>{setCustomerOpen(true); setCustomerMode("register")},150)}} className="text-[#003D32] font-semibold underline">Create ID</button></p>
                   </form>
@@ -1743,17 +1787,15 @@ export default function App() {
                     if (!address) { showToast('Please fill delivery address'); return }
                     let payment=null
                     if (cartPayment==='bKash') {
-                      const bn=fd.get('bkash_number')?.toString().trim()||''
-                      const trx=fd.get('bkash_trx')?.toString().trim()||''
-                      if(!bn || !/^01[0-9]{9}$/.test(bn)){ showToast('bKash number must be 01XXXXXXXXX'); return }
-                      if(!trx || trx.length<6){ showToast('Enter valid bKash TrxID'); return }
-                      payment={paymentMethod:'bKash', bkashNumber:bn, bkashTrxId:trx}
+                      payment={paymentMethod:'bKash'}
                     } else payment={paymentMethod:'COD'}
                     const customer = { name: authUser.name, phone: authUser.phone, email: authUser.email, address, userId: authUser.userId }
                     try {
                       const order = await createOrder(customer, [...cart], cartTotal, payment)
-                      showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • ${payment.paymentMethod==='bKash' ? 'bKash Paid' : 'COD'} • ID ${authUser.userId}`)
+                      showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • ${payment.paymentMethod==='bKash' ? 'bKash → Send Money' : 'COD'} • ID ${authUser.userId}`)
+                      const isBkash = payment.paymentMethod==='bKash'
                       setCart([]); setCartOpen(false); setCartPayment('COD')
+                      if (isBkash) setTimeout(()=> openBkashSendMoney(cartTotal), 700)
                     } catch(err) { showToast(err.message || 'Order failed') }
                   }} className="space-y-3">
                     <div className="bg-white rounded-2xl p-3 border border-[#E6F0EE] text-xs">
@@ -1768,13 +1810,16 @@ export default function App() {
                       <button type="button" onClick={()=> setCartPayment('bKash')} className={`rounded-full py-2.5 text-xs font-bold border transition flex items-center justify-center gap-1.5 ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white border-[#E2136E]' : 'bg-[#E2136E]/5 text-[#E2136E] border-[#E2136E]/20'}`}><span className={`w-2 h-2 rounded-full ${cartPayment==='bKash' ? 'bg-white' : 'bg-[#E2136E]'}`} /> bKash</button>
                     </div>
                     {cartPayment==='bKash' && (
-                      <div className="bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-2xl p-3 space-y-2">
-                        <div className="flex items-center gap-2 text-[11px] font-bold text-[#E2136E]"><span className="bg-[#E2136E] text-white px-2 py-0.5 rounded text-[10px]">bKash</span> Merchant 01951250125 • Tk {cartTotal.toLocaleString()}</div>
-                        <input name="bkash_number" required={cartPayment==='bKash'} pattern="01[0-9]{9}" placeholder="Your bKash Number *" className="w-full border border-[#E2136E]/20 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#E2136E] bg-white" />
-                        <input name="bkash_trx" required={cartPayment==='bKash'} placeholder="bKash TrxID *" className="w-full border border-[#E2136E]/20 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#E2136E] bg-white" />
+                      <div className="bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-2xl p-3 space-y-3">
+                        <div className="flex items-center gap-2 text-[11px] font-bold text-[#E2136E]"><span className="bg-[#E2136E] text-white px-2 py-0.5 rounded text-[10px]">bKash</span> Send to {BKASH_MERCHANT} • Tk {cartTotal.toLocaleString()}</div>
+                        <p className="text-[11px] leading-relaxed text-zinc-700">Tap <b>Checkout</b> → you’ll be moved directly to <b>bKash Send Money</b> (to <b className="text-[#E2136E]">{BKASH_MERCHANT}</b>). Complete Send Money, then return.</p>
+                        <div className="flex gap-2">
+                          <a href={`tel:*247*1*${BKASH_MERCHANT}*${cartTotal}%23`} className="flex-1 bg-white border border-[#E2136E]/20 rounded-full py-2 text-center text-xs font-bold text-[#E2136E]">Dial *247#</a>
+                          <button type="button" onClick={()=> openBkashSendMoney(cartTotal)} className="flex-1 bg-[#E2136E] text-white rounded-full py-2 text-xs font-bold">Open bKash App</button>
+                        </div>
                       </div>
                     )}
-                    <button type="submit" className={`w-full rounded-full py-4 font-semibold transition ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white hover:bg-[#C0105E]' : 'bg-[#003D32] text-white hover:bg-[#004D40]'}`}>Checkout • Tk {cartTotal.toLocaleString()}.00 — {cartPayment==='bKash' ? 'bKash Paid' : authUser?.userId}</button>
+                    <button type="submit" className={`w-full rounded-full py-4 font-semibold transition ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white hover:bg-[#C0105E]' : 'bg-[#003D32] text-white hover:bg-[#004D40]'}`}>Checkout • Tk {cartTotal.toLocaleString()}.00 — {cartPayment==='bKash' ? 'bKash → Send' : authUser?.userId}</button>
                     <p className="text-[11px] text-center text-zinc-500">{cartPayment==='bKash' ? 'bKash Paid • ' : 'Cash on Delivery • '}Free delivery over Tk 1999 • ID {authUser.userId}</p>
                   </form>
                 )}
@@ -1877,14 +1922,10 @@ export default function App() {
                     customer = { name, phone, email, address: guestAddr }
                     address = guestAddr
                   }
-                  // bKash validation
+                  // bKash direct — no number/Trx needed, will redirect to bKash Send Money app
                   let payment = null
                   if (orderPayment === 'bKash') {
-                    const bn = form.get('bkash_number')?.toString().trim() || ''
-                    const trx = form.get('bkash_trx')?.toString().trim() || ''
-                    if (!bn || !/^01[0-9]{9}$/.test(bn)) { showToast('bKash number must be 01XXXXXXXXX (11 digits)'); return }
-                    if (!trx || trx.length < 6) { showToast('Enter valid bKash TrxID (min 6 chars)'); return }
-                    payment = { paymentMethod: 'bKash', bkashNumber: bn, bkashTrxId: trx }
+                    payment = { paymentMethod: 'bKash' }
                   } else {
                     payment = { paymentMethod: 'COD' }
                   }
@@ -1894,13 +1935,14 @@ export default function App() {
                     addToCart({...orderProduct, size: orderSize, qty: orderQty})
                     setOrderProduct(null)
                     setOrderQty(1)
-                    setOrderPayment('COD')
+                    const isBkash = payment.paymentMethod==='bKash'
                     if (authUser) {
-                      showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • ${payment.paymentMethod==='bKash' ? 'bKash Paid' : 'COD'} • ID ${authUser.userId}`)
+                      showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • ${isBkash ? 'bKash → Opening Send Money' : 'COD'} • ID ${authUser.userId}`)
                     } else {
-                      showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • ${payment.paymentMethod==='bKash' ? 'bKash Paid' : 'COD'} • Delivering to ${address}`)
+                      showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • ${isBkash ? 'bKash → Opening Send Money' : 'COD'} • Delivering to ${address}`)
                     }
                     setCartOpen(true)
+                    if (isBkash) setTimeout(()=> openBkashSendMoney(total), 700)
                   } catch(err) { showToast(err.message || 'Order failed') }
                 }} className="mt-6 space-y-3">
                   {authUser ? (
@@ -1956,13 +1998,15 @@ export default function App() {
                       <div className="bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-2xl p-4 space-y-3">
                         <div className="flex items-center gap-2">
                           <span className="bg-[#E2136E] text-white text-[11px] font-extrabold px-2 py-1 rounded">bKash</span>
-                          <span className="text-xs font-bold text-[#E2136E]">Merchant: 01951250125 (Personal)</span>
+                          <span className="text-xs font-bold text-[#E2136E]">Send to {BKASH_MERCHANT} — {BKASH_MERCHANT_NAME}</span>
                           <span className="ml-auto text-[11px] font-bold bg-white border border-[#E2136E]/20 rounded-full px-2 py-1">Tk {(orderProduct.price * orderQty).toLocaleString()}</span>
                         </div>
-                        <p className="text-[11px] leading-relaxed text-zinc-700">1) Open bKash App → <b>Send Money</b> → To <b className="text-[#E2136E]">01951250125</b> → Amount <b>Tk {(orderProduct.price * orderQty).toLocaleString()}</b><br/>2) Copy the <b>Transaction ID (TrxID)</b> from bKash SMS and paste below</p>
-                        <input name="bkash_number" required={orderPayment==='bKash'} pattern="01[0-9]{9}" placeholder="Your bKash Number 01XXXXXXXXX *" className="w-full border border-[#E2136E]/20 rounded-full px-5 py-3 text-sm outline-none focus:border-[#E2136E] bg-white" />
-                        <input name="bkash_trx" required={orderPayment==='bKash'} placeholder="bKash TrxID e.g. 8N7K9X2PQ1 *" className="w-full border border-[#E2136E]/20 rounded-full px-5 py-3 text-sm outline-none focus:border-[#E2136E] bg-white" />
-                        <p className="text-[10px] text-zinc-500">Amount must match total. We verify TrxID before confirming order.</p>
+                        <p className="text-[11px] leading-relaxed text-zinc-700">Tap <b>Confirm & Pay via bKash</b> below — you’ll be moved directly to <b>bKash Send Money</b> (amount <b>Tk {(orderProduct.price * orderQty).toLocaleString()}</b> to <b className="text-[#E2136E]">{BKASH_MERCHANT}</b> auto-copied). Complete Send Money in the bKash app, then return.</p>
+                        <div className="flex gap-2">
+                          <a href={`tel:*247*1*${BKASH_MERCHANT}*${(orderProduct.price * orderQty)}%23`} className="flex-1 bg-white border border-[#E2136E]/20 rounded-full py-2.5 text-center text-xs font-bold text-[#E2136E] hover:bg-[#E2136E]/10 transition">Dial *247#</a>
+                          <button type="button" onClick={()=> openBkashSendMoney(orderProduct.price * orderQty)} className="flex-1 bg-[#E2136E] text-white rounded-full py-2.5 text-xs font-bold hover:bg-[#C0105E] transition">Open bKash App →</button>
+                        </div>
+                        <p className="text-[10px] text-zinc-500 text-center">No need to enter number — merchant copied. Just Send Money from your bKash.</p>
                       </div>
                     )}
                     {orderPayment==='COD' && <p className="text-[11px] text-zinc-500 bg-[#F6F8F7] border border-[#E6F0EE] rounded-full px-4 py-2 text-center">Cash on Delivery — Pay when you receive • Free delivery over Tk 1999</p>}
