@@ -9,6 +9,7 @@ import Order from '../server/models/Order.js'
 import productRoutes from '../server/routes/products.js'
 import orderRoutes from '../server/routes/orders.js'
 import clusterRoutes from '../server/routes/cluster.js'
+import authRoutes from '../server/routes/auth.js'
 
 dotenv.config()
 
@@ -25,6 +26,7 @@ app.get('/api/health', (_req,res)=>{
 app.use('/api/products', productRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/cluster', clusterRoutes)
+app.use('/api/auth', authRoutes)
 app.get('/api/stats', async (_req,res)=>{
   try{
     if(mongoose.connection.readyState!==1){
@@ -41,6 +43,7 @@ app.get('/api/stats', async (_req,res)=>{
 // Mongo connect (cached for serverless)
 global.__MEM_PRODUCTS__ = global.__MEM_PRODUCTS__ || []
 global.__MEM_ORDERS__ = global.__MEM_ORDERS__ || []
+global.__MEM_USERS__ = global.__MEM_USERS__ || []
 let isConnecting=false
 const URIS=[process.env.MONGODB_URI,process.env.MONGODB_URI_FALLBACK,'mongodb://antor1234:gLtCjLFlziknQ5vC@ac-qfqjcqh-shard-00-00.ify2tzs.mongodb.net:27017,ac-qfqjcqh-shard-00-01.ify2tzs.mongodb.net:27017,ac-qfqjcqh-shard-00-02.ify2tzs.mongodb.net:27017/krevos?ssl=true&replicaSet=atlas-egobpd-shard-0&authSource=admin&retryWrites=true&w=majority'].filter(Boolean)
 async function connect(){

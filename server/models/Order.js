@@ -5,9 +5,13 @@ const orderSchema = new mongoose.Schema({
   orderId: { type: String, required: true, unique: true },
   date: { type: Date, default: Date.now },
   customer: { type: customerSchema, required: true },
+  userId: { type: String, default: null }, // KVS-XXXXXX linking to User.userId
+  userRef: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   items: { type: [orderItemSchema], required: true },
   total: { type: Number, required: true },
   status: { type: String, enum: ['Pending','Confirmed','Cancelled','Shipped','Delivered'], default: 'Pending' },
 }, { timestamps: true })
 orderSchema.index({ 'customer.phone': 1 })
+orderSchema.index({ userId: 1 })
+orderSchema.index({ date: -1 })
 export default mongoose.model('Order', orderSchema)

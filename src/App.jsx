@@ -133,10 +133,12 @@ export default function App() {
   const totalSell = orders.reduce((s,o)=> s + (o.total || 0), 0)
 
   const createOrder = async (customer, items, total) => {
-    const localOrder = { id: 'CRS-' + Date.now().toString().slice(-6), date: new Date().toISOString(), customer, items, total, status: 'Pending' }
+    const userId = authUser?.userId || customer.userId || null
+    const customerWithId = { ...customer, userId, email: customer.email || authUser?.email || '' }
+    const localOrder = { id: 'CRS-' + Date.now().toString().slice(-6), date: new Date().toISOString(), customer: customerWithId, userId, items, total, status: 'Pending' }
     setOrders(prev => [localOrder, ...prev])
     try {
-      const saved = await api.createOrder({ customer, items, total, status: 'Pending', id: localOrder.id })
+      const saved = await api.createOrder({ customer: customerWithId, items, total, status: 'Pending', id: localOrder.id, userId })
       if (saved && saved.id) { setOrders(prev => prev.map(o => o.id === localOrder.id ? { ...saved } : o)); return saved }
     } catch (e) { console.warn('createOrder Mongo failed', e.message); showToast('Order saved locally — will sync when online') }
     return localOrder
@@ -257,12 +259,57 @@ export default function App() {
   const [customerOpen, setCustomerOpen] = useState(false)
   const [customerMode, setCustomerMode] = useState("login") // login | register
   const [registerPage, setRegisterPage] = useState(false)
+  const [authUser, setAuthUser] = useState(() => {
+    try {
+      const v = localStorage.getItem('krevos_user')
+      if (v) return JSON.parse(v)
+      const legacy = localStorage.getItem('krevos_first_customer')
+      if (legacy) {
+        const j = JSON.parse(legacy)
+        if (j && j.name && j.phone) return { name: j.name, phone: j.phone, email: j.email || '', userId: j.userId || 'KVS-LEGACY', address: j.address || '' }
+      }
+    } catch {}
+    return null
+  })
+  const [pendingOrderProduct, setPendingOrderProduct] = useState(null)
+
+  useEffect(() => {
+    if (authUser) localStorage.setItem('krevos_user', JSON.stringify(authUser))
+    else localStorage.removeItem('krevos_user')
+  }, [authUser])
 
   useEffect(() => {
     const h = window.location.hash
     const p = new URLSearchParams(window.location.search)
     if (h === "#register" || p.has("register") || window.location.pathname.endsWith("/register")) setRegisterPage(true)
   }, [])
+
+  const requireAuthForOrder = (product) => {
+    if (!authUser) {
+      if (product) setPendingOrderProduct(product)
+      setCustomerOpen(true)
+      setCustomerMode("login")
+      showToast("Please login or create an ID to order — data required")
+      return false
+    }
+    return true
+  }
+  const handleLogout = () => {
+    setAuthUser(null)
+    localStorage.removeItem('krevos_user')
+    localStorage.removeItem('krevos_customer')
+    showToast("Logged out — see you again at KREVOS.Store")
+  }
+  const handleAuthSuccess = (user) => {
+    setAuthUser(user)
+    localStorage.setItem('krevos_user', JSON.stringify(user))
+    showToast(`Welcome ${user.name} — ID ${user.userId} • logged in`)
+    setCustomerOpen(false)
+    if (pendingOrderProduct) {
+      setOrderProduct(pendingOrderProduct)
+      setPendingOrderProduct(null)
+    }
+  }
 
   const handleAdminLogin = (e) => {
     e.preventDefault()
@@ -481,37 +528,46 @@ export default function App() {
               ) : (
                 <div className="mt-4 space-y-2">
                   {(() => {
-                    const map = {}
-                    orders.forEach(o=>{ const key=o.customer.phone+"|"+o.customer.name; if(!map[key]) map[key]={ customer:o.customer, orders:[], total:0 }; map[key].orders.push(o); map[key].total+=o.total })
-                    const list = Object.values(map).sort((a,b)=>b.total-a.total)
-                    return list.map(({customer, orders: custOrders, total}) => {
-                      const key = customer.phone+"|"+customer.name
-                      const isOpen = selectedCustomer===key
-                      const pendingHere = custOrders.filter(o=>o.status==='Pending').length
-                      return (
-                        <div key={key} className="border border-[#E6F0EE] rounded-2xl overflow-hidden">
-                          <button onClick={()=> setSelectedCustomer(isOpen ? null : key)} className="w-full flex items-center gap-3 p-4 hover:bg-[#F6F8F7] transition text-left">
-                            <div className="w-10 h-10 rounded-full bg-[#003D32] text-white grid place-items-center shrink-0 text-sm font-bold">{customer.name.slice(0,1).toUpperCase()}</div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold truncate">{customer.name} <span className="text-zinc-400 font-normal">• {customer.phone}</span></p>
-                              <p className="text-xs text-zinc-500 truncate">{customer.address || "—"} • {custOrders.length} order{custOrders.length>1?"s":""} {pendingHere>0 && <span className="ml-1 bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold">● {pendingHere} pending</span>}</p>
-                            </div>
-                            <div className="text-right shrink-0">
-                              <p className="text-sm font-bold text-[#003D32]">Tk {total.toLocaleString()}</p>
-                              <p className="text-[11px] text-zinc-500">{new Date(custOrders[0].date).toLocaleDateString()}</p>
-                            </div>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className={`shrink-0 transition ${isOpen?"rotate-180":""}`}><path d="m6 9 6 6 6-6"/></svg>
-                          </button>
+                      const map = {}
+                      orders.forEach(o=>{
+                        const uid = o.userId || o.customer.userId || o.customer.email || ""
+                        const key = (uid ? uid+"|" : "") + o.customer.phone+"|"+o.customer.name
+                        if(!map[key]) map[key]={ customer:o.customer, userId: o.userId || o.customer.userId || null, orders:[], total:0 }
+                        map[key].orders.push(o)
+                        map[key].total+=o.total
+                        if(!map[key].userId && (o.userId || o.customer.userId)) map[key].userId = o.userId || o.customer.userId
+                      })
+                      const list = Object.values(map).sort((a,b)=>b.total-a.total)
+                      return list.map(({customer, userId, orders: custOrders, total}) => {
+                        const uid = userId || custOrders[0]?.userId || customer.userId || ""
+                        const key = (uid?uid+"|":"")+customer.phone+"|"+customer.name
+                        const isOpen = selectedCustomer===key
+                        const pendingHere = custOrders.filter(o=>o.status==='Pending').length
+                        return (
+                          <div key={key} className="border border-[#E6F0EE] rounded-2xl overflow-hidden">
+                            <button onClick={()=> setSelectedCustomer(isOpen ? null : key)} className="w-full flex items-center gap-3 p-4 hover:bg-[#F6F8F7] transition text-left">
+                              <div className="w-10 h-10 rounded-full bg-[#003D32] text-white grid place-items-center shrink-0 text-sm font-bold">{customer.name.slice(0,1).toUpperCase()}</div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold truncate flex items-center gap-2">{customer.name} {uid && <span className="font-mono text-[10px] bg-[#003D32] text-white px-1.5 py-0.5 rounded-full">{uid}</span>} <span className="text-zinc-400 font-normal">• {customer.phone}</span> {customer.email && <span className="text-zinc-400 font-normal hidden md:inline">• {customer.email}</span>}</p>
+                                <p className="text-xs text-zinc-500 truncate">{customer.address || "—"} • {custOrders.length} order{custOrders.length>1?"s":""} {pendingHere>0 && <span className="ml-1 bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold">● {pendingHere} pending</span>} • clustered by ID</p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="text-sm font-bold text-[#003D32]">Tk {total.toLocaleString()}</p>
+                                <p className="text-[11px] text-zinc-500">{new Date(custOrders[0].date).toLocaleDateString()} • {uid||"no-ID"}</p>
+                              </div>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className={`shrink-0 transition ${isOpen?"rotate-180":""}`}><path d="m6 9 6 6 6-6"/></svg>
+                            </button>
                           {isOpen && (
                             <div className="border-t border-[#E6F0EE] bg-[#F6F8F7]/50 p-3 space-y-2">
                               {custOrders.slice().sort((a,b)=> new Date(b.date)-new Date(a.date)).map(o=>(
                                 <div key={o.id} className="bg-white rounded-xl border border-[#E6F0EE] p-3">
-                                  <div className="flex items-center justify-between text-xs">
+                                  <div className="flex items-center justify-between text-xs gap-2">
                                     <span className="font-mono font-semibold bg-[#E6F0EE] text-[#003D32] px-2 py-1 rounded-full">{o.id}</span>
-                                    <span className={`px-2 py-1 rounded-full font-bold text-[10px] tracking-widest uppercase ${o.status==='Pending' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-green-100 text-green-700 border border-green-200'}`}>{o.status || 'Pending'}</span>
+                                    <span className="font-mono text-[10px] bg-[#003D32] text-white px-2 py-1 rounded-full">{o.userId || o.customer.userId || 'no-ID'}</span>
+                                    <span className={`ml-auto px-2 py-1 rounded-full font-bold text-[10px] tracking-widest uppercase ${o.status==='Pending' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-green-100 text-green-700 border border-green-200'}`}>{o.status || 'Pending'}</span>
                                   </div>
                                   <div className="flex items-center justify-between text-xs mt-2">
-                                    <span className="text-zinc-500">{new Date(o.date).toLocaleString()}</span>
+                                    <span className="text-zinc-500">{new Date(o.date).toLocaleString()} • {o.customer.name} • {o.customer.email || 'no-email'}</span>
                                     <div className="flex items-center gap-2">
                                       <span className="font-bold text-[#003D32]">Tk {o.total.toLocaleString()}</span>
                                       {o.status==='Pending' && <button onClick={() => confirmOrder(o.id)} className="bg-[#003D32] text-white px-3 py-1.5 rounded-full text-[11px] font-bold hover:bg-[#004D40] transition">Confirm Order</button>}
@@ -537,6 +593,39 @@ export default function App() {
                   })()}
                 </div>
               )}
+            </div>
+
+            {/* ── Cluster — Every Name with Orders (DB view) ── */}
+            <div className="bg-white rounded-[24px] border border-[#E6F0EE] p-6 md:p-8 mb-6">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Cluster — Every Name with Orders</h3>
+                <a href="/api/cluster" target="_blank" rel="noopener noreferrer" className="text-xs bg-[#003D32] text-white px-3 py-1.5 rounded-full font-semibold hover:bg-[#004D40] transition">Open /api/cluster →</a>
+              </div>
+              <p className="text-sm text-zinc-500 mt-1">Each order is tied to a Customer ID (<span className="font-mono">KVS-xxxxxx</span>) • This is the “cluster” — grouped by name + ID • Data lives in MongoDB <span className="font-mono">krevos</span> → <span className="font-mono">users</span> & <span className="font-mono">orders</span> collections (see /api/cluster).</p>
+              {orders.length===0 ? (
+                <div className="mt-4 rounded-xl border border-dashed border-[#E6F0EE] p-6 text-center text-sm text-zinc-500">No clustered orders yet — place a logged-in order and it will appear here grouped by your ID.</div>
+              ) : (
+                <div className="mt-4 overflow-auto rounded-xl border border-[#E6F0EE]">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-[#003D32] text-white"><tr><th className="px-3 py-2">Cluster ID</th><th className="px-3 py-2">Name</th><th className="px-3 py-2">Phone</th><th className="px-3 py-2">Email</th><th className="px-3 py-2">Orders</th><th className="px-3 py-2">Total</th></tr></thead>
+                    <tbody className="divide-y divide-[#E6F0EE]">
+                      {(() => {
+                        const m = {}
+                        orders.forEach(o=>{
+                          const uid = o.userId || o.customer.userId || o.customer.email || 'no-ID'
+                          const key = uid+"|"+o.customer.name+"|"+o.customer.phone
+                          if(!m[key]) m[key] = { uid, name: o.customer.name, phone: o.customer.phone, email: o.customer.email||'—', count:0, total:0 }
+                          m[key].count+=1; m[key].total+=o.total
+                        })
+                        return Object.values(m).sort((a,b)=>b.total-a.total).map(r=>(
+                          <tr key={r.uid+r.name} className="hover:bg-[#F6F8F7]"><td className="px-3 py-2 font-mono font-bold text-[#003D32]">{r.uid}</td><td className="px-3 py-2 font-medium">{r.name}</td><td className="px-3 py-2">{r.phone}</td><td className="px-3 py-2 truncate max-w-[160px]">{r.email}</td><td className="px-3 py-2 text-center">{r.count}</td><td className="px-3 py-2 font-bold">Tk {r.total.toLocaleString()}</td></tr>
+                        ))
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <p className="text-[11px] text-zinc-500 mt-3">API: <span className="font-mono">GET /api/cluster</span> shows every database & collection • <span className="font-mono">GET /api/auth/users</span> lists all IDs • <span className="font-mono">GET /api/orders</span> with customer & userId.</p>
             </div>
 
             <div className="bg-white rounded-[24px] border border-[#E6F0EE] p-6 md:p-8">
@@ -672,7 +761,32 @@ export default function App() {
             <div className="bg-white rounded-[24px] border border-[#E6F0EE] p-6 md:p-8 shadow-xl">
               <h3 className="font-semibold">Create your account</h3>
               <p className="text-sm text-zinc-500 mt-1">For your 1st order — be part of KREVOS Town.</p>
-              <form onSubmit={e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const name=fd.get('name'); const phone=fd.get('phone'); const email=fd.get('email'); const pw=fd.get('pw'); const cpw=fd.get('cpw'); if(!name||!phone||!email||!pw||!cpw){showToast("Please fill all fields"); return} if(pw!==cpw){showToast("Passwords do not match"); return} if(!/^01[0-9]{9}$/.test(phone)){showToast("Phone must be 01XXXXXXXXX (11 digits)"); return} const data={name,phone,email,at:Date.now()}; localStorage.setItem('krevos_first_customer', JSON.stringify(data)); localStorage.setItem('krevos_customer', JSON.stringify({email})); showToast(`Welcome ${name} — 15% OFF code WELCOME15 sent to ${email}`); setRegisterPage(false); setCustomerOpen(false); window.history.replaceState(null,"",window.location.pathname);}} className="mt-6 space-y-4">
+              <form onSubmit={async e=>{
+                e.preventDefault();
+                const fd=new FormData(e.currentTarget);
+                const name=fd.get('name')?.toString().trim()||'';
+                const phone=fd.get('phone')?.toString().trim()||'';
+                const email=fd.get('email')?.toString().trim()||'';
+                const pw=fd.get('pw')?.toString()||'';
+                const cpw=fd.get('cpw')?.toString()||'';
+                if(!name||!phone||!email||!pw||!cpw){showToast("Please fill all fields"); return}
+                if(pw!==cpw){showToast("Passwords do not match"); return}
+                if(!/^01[0-9]{9}$/.test(phone)){showToast("Phone must be 01XXXXXXXXX (11 digits)"); return}
+                const btn=e.currentTarget.querySelector('button[type="submit"]');
+                const orig=btn?.textContent;
+                if(btn){btn.disabled=true; btn.textContent="Creating ID..."}
+                try{
+                  const res=await api.register({ name, phone, email, password: pw });
+                  if(res && res.user){
+                    handleAuthSuccess(res.user);
+                    showToast(`Welcome ${name} — ID ${res.user.userId} • 15% OFF code WELCOME15`);
+                    setRegisterPage(false);
+                    window.history.replaceState(null,"",window.location.pathname);
+                    if(pendingOrderProduct){ setOrderProduct(pendingOrderProduct); setPendingOrderProduct(null) }
+                  }
+                }catch(err){ showToast(err.message||"Registration failed") }
+                finally{ if(btn){btn.disabled=false; btn.textContent=orig}}
+              }} className="mt-6 space-y-4">
                 <div><label className="text-xs font-semibold">Full Name *</label><input name="name" required placeholder="Rahim Ahmed" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
                 <div className="grid grid-cols-2 gap-3"><div><label className="text-xs font-semibold">Phone *</label><input name="phone" required pattern="01[0-9]{9}" placeholder="01951250125" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div><div><label className="text-xs font-semibold">Email *</label><input name="email" required type="email" placeholder="you@gmail.com" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div></div>
                 <div><label className="text-xs font-semibold">Password *</label><input name="pw" required type="password" placeholder="Create password" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
@@ -774,9 +888,17 @@ export default function App() {
               <button onClick={() => setSearchOpen(true)} className="md:hidden p-2">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
               </button>
-              <button onClick={() => setCustomerOpen(true)} title="Customer Login" className="hidden md:grid place-items-center w-10 h-10 rounded-full hover:bg-white border border-transparent hover:border-[#DDE8E6] transition cursor-pointer">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              </button>
+              {authUser ? (
+                <button onClick={() => setCustomerOpen(true)} title={`${authUser.name} • ${authUser.userId}`} className="hidden md:flex items-center gap-2 bg-[#003D32] text-white rounded-full pl-2 pr-3 py-1.5 text-xs font-semibold hover:bg-[#004D40] transition">
+                  <span className="w-7 h-7 rounded-full bg-white text-[#003D32] grid place-items-center font-bold text-xs">{authUser.name.slice(0,1).toUpperCase()}</span>
+                  <span className="hidden lg:inline max-w-[90px] truncate">{authUser.name.split(' ')[0]}</span>
+                  <span className="hidden lg:inline font-mono text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">{authUser.userId}</span>
+                </button>
+              ) : (
+                <button onClick={() => setCustomerOpen(true)} title="Customer Login" className="hidden md:grid place-items-center w-10 h-10 rounded-full hover:bg-white border border-transparent hover:border-[#DDE8E6] transition cursor-pointer">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+              )}
               <button onClick={() => showToast(wishlist.size ? `Wishlist — ${wishlist.size} items at KREVOS.Store` : "Wishlist is empty — Save your favorites")} className="relative grid place-items-center w-10 h-10 rounded-full hover:bg-white border border-transparent hover:border-[#DDE8E6] transition cursor-pointer">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M19 14c1.5-1.6 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 1-4.5 2.5C10.5 4 9.3 3 7.5 3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 3.9 3 5.5l7 7Z"/></svg>
                 {wishlist.size > 0 && <span className="absolute -top-0.5 -right-0.5 bg-[#003D32] text-white text-[10px] w-5 h-5 grid place-items-center rounded-full">{wishlist.size}</span>}
@@ -1331,25 +1453,84 @@ export default function App() {
               <button onClick={() => setCustomerOpen(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center hover:bg-zinc-200 transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
             </div>
             <div className="p-6">
-              <div className="flex gap-2 mb-6 bg-[#F6F8F7] rounded-full p-1">
-                <button onClick={() => setCustomerMode("login")} className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${customerMode==="login" ? "bg-[#003D32] text-white" : "text-zinc-600"}`}>Login</button>
-                <button onClick={() => setCustomerMode("register")} className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${customerMode==="register" ? "bg-[#003D32] text-white" : "text-zinc-600"}`}>Register</button>
-              </div>
-              <form onSubmit={e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const email=fd.get("email"); const pw=fd.get("password"); if(!email||!pw){showToast("Please fill email & password"); return} showToast(customerMode==="login" ? `Welcome back ${email} — KREVOS.Store` : `Account created for ${email} — Welcome to KREVOS.Store`); setCustomerOpen(false); e.currentTarget.reset();}} className="space-y-4">
-                <input name="email" type="email" required placeholder="Email" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" />
-                <input name="password" type="password" required placeholder="Password" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" />
-                {customerMode==="register" && <input name="name" required placeholder="Full Name" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" />}
-                <button type="submit" className="w-full bg-[#003D32] text-white rounded-full py-3.5 text-sm font-bold hover:bg-[#004D40] transition">{customerMode==="login" ? "Login" : "Create Account"}</button>
-                <div className="text-center text-xs text-zinc-500">
-                  {customerMode==="login" ? (
-                    <>Don’t have an account? <button type="button" onClick={()=>setCustomerMode("register")} className="text-[#003D32] font-semibold hover:underline">Register</button> • <button type="button" onClick={()=>setCustomerOpen(false)} className="hover:underline">Continue as guest</button></>
-                  ) : (
-                    <>Already have an account? <button type="button" onClick={()=>setCustomerMode("login")} className="text-[#003D32] font-semibold hover:underline">Login</button></>
-                  )}
+              {authUser ? (
+                <div className="space-y-4">
+                  <div className="bg-[#F6F8F7] rounded-2xl p-5 border border-[#E6F0EE] text-center">
+                    <div className="w-14 h-14 rounded-full bg-[#003D32] text-white grid place-items-center mx-auto text-xl font-bold">{authUser.name.slice(0,1).toUpperCase()}</div>
+                    <p className="font-semibold mt-3">{authUser.name}</p>
+                    <p className="text-xs text-zinc-500 mt-1">{authUser.email} • {authUser.phone}</p>
+                    <p className="mt-2 inline-flex items-center gap-1.5 bg-[#003D32] text-white text-xs font-mono px-3 py-1 rounded-full">ID: {authUser.userId}</p>
+                    {authUser.address && <p className="text-xs text-zinc-500 mt-2">{authUser.address}</p>}
+                    <p className="text-[11px] text-[#003D32] font-semibold mt-2 bg-white rounded-full px-3 py-1 border border-[#DDE8E6] inline-block">{orders.filter(o=> o.userId===authUser.userId || o.customer.phone===authUser.phone).length} orders • Tk {orders.filter(o=> o.userId===authUser.userId || o.customer.phone===authUser.phone).reduce((s,o)=>s+o.total,0).toLocaleString()} total</p>
+                  </div>
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs">
+                    <p className="font-semibold text-amber-800">Your orders are clustered by name & ID in admin</p>
+                    <p className="text-amber-700 mt-1">Every order you place with <b>{authUser.userId}</b> will appear grouped under <b>{authUser.name}</b> in Admin → Customers & Order History and in /api/cluster.</p>
+                  </div>
+                  <button onClick={handleLogout} className="w-full border border-red-200 text-red-600 bg-red-50 rounded-full py-3 text-sm font-semibold hover:bg-red-100 transition">Logout — {authUser.userId}</button>
+                  <button onClick={()=>setCustomerOpen(false)} className="w-full bg-[#003D32] text-white rounded-full py-3 text-sm font-bold hover:bg-[#004D40] transition">Continue Shopping</button>
                 </div>
-                <button type="button" onClick={()=>{setCustomerOpen(false); setRegisterPage(true); window.location.hash="#register"}} className="w-full mt-1 border border-[#C5A880]/30 bg-[#C5A880]/10 text-[#003D32] rounded-full py-2.5 text-xs font-semibold hover:bg-[#C5A880]/20 transition">First Order? Full Registration — Get 15% OFF →</button>
-                <p className="text-[11px] text-center text-zinc-400">Demo only — no backend. Admin via footer “Admin” or #admin (password: hidden).</p>
-              </form>
+              ) : (
+                <>
+                  <div className="flex gap-2 mb-6 bg-[#F6F8F7] rounded-full p-1">
+                    <button onClick={() => setCustomerMode("login")} className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${customerMode==="login" ? "bg-[#003D32] text-white" : "text-zinc-600"}`}>Login</button>
+                    <button onClick={() => setCustomerMode("register")} className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${customerMode==="register" ? "bg-[#003D32] text-white" : "text-zinc-600"}`}>Register (Create ID)</button>
+                  </div>
+                  <form onSubmit={async e=>{
+                    e.preventDefault();
+                    const fd=new FormData(e.currentTarget);
+                    const btn=e.currentTarget.querySelector('button[type="submit"]');
+                    const origText=btn?.textContent;
+                    if(btn){ btn.disabled=true; btn.textContent="Please wait..." }
+                    try{
+                      if(customerMode==="login"){
+                        const emailOrPhone=(fd.get("emailOrPhone")||fd.get("email")||"").toString().trim();
+                        const pw=fd.get("password")?.toString()||"";
+                        if(!emailOrPhone||!pw){ showToast("Please fill email/phone & password"); return }
+                        const res=await api.login({ emailOrPhone, email: emailOrPhone, phone: emailOrPhone, password: pw });
+                        if(res && res.user){ handleAuthSuccess(res.user) }
+                      } else {
+                        const name=fd.get("name")?.toString().trim()||"";
+                        const phone=fd.get("phone")?.toString().trim()||"";
+                        const email=fd.get("email")?.toString().trim()||"";
+                        const pw=fd.get("password")?.toString()||"";
+                        const cpw=fd.get("cpassword")?.toString()||"";
+                        const address=fd.get("address")?.toString().trim()||"";
+                        if(!name||!phone||!email||!pw){ showToast("Please fill name, phone, email, password"); return }
+                        if(pw!==cpw){ showToast("Passwords do not match"); return }
+                        const res=await api.register({ name, phone, email, password: pw, address });
+                        if(res && res.user){ handleAuthSuccess(res.user); showToast(`ID ${res.user.userId} created — you can now order`) }
+                      }
+                    }catch(err){ showToast(err.message||"Auth failed") }
+                    finally{ if(btn){ btn.disabled=false; btn.textContent=origText } }
+                  }} className="space-y-3">
+                    {customerMode==="login" ? (
+                      <>
+                        <div><label className="text-xs font-semibold">Email or Phone *</label><input name="emailOrPhone" required placeholder="you@gmail.com or 01XXXXXXXXX" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
+                        <div><label className="text-xs font-semibold">Password *</label><input name="password" type="password" required placeholder="Password" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
+                      </>
+                    ) : (
+                      <>
+                        <div><label className="text-xs font-semibold">Full Name *</label><input name="name" required placeholder="Rahim Ahmed" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
+                        <div className="grid grid-cols-2 gap-3"><div><label className="text-xs font-semibold">Phone *</label><input name="phone" required pattern="01[0-9]{9}" placeholder="01951250125" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div><div><label className="text-xs font-semibold">Email *</label><input name="email" required type="email" placeholder="you@gmail.com" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div></div>
+                        <div><label className="text-xs font-semibold">Address</label><input name="address" placeholder="Road, Area, District" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div>
+                        <div className="grid grid-cols-2 gap-3"><div><label className="text-xs font-semibold">Password *</label><input name="password" type="password" required placeholder="Create password" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div><div><label className="text-xs font-semibold">Confirm *</label><input name="cpassword" type="password" required placeholder="Confirm" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32]" /></div></div>
+                        <label className="flex items-start gap-2 text-xs text-zinc-600"><input type="checkbox" required className="mt-0.5 accent-[#003D32]" /> I agree to KREVOS.Store Terms & Privacy.</label>
+                      </>
+                    )}
+                    <button type="submit" className="w-full bg-[#003D32] text-white rounded-full py-3.5 text-sm font-bold hover:bg-[#004D40] transition">{customerMode==="login" ? "Login & Order" : "Create ID & Login"}</button>
+                    <div className="text-center text-xs text-zinc-500">
+                      {customerMode==="login" ? (
+                        <>Don’t have an ID? <button type="button" onClick={()=>setCustomerMode("register")} className="text-[#003D32] font-semibold hover:underline">Create ID</button></>
+                      ) : (
+                        <>Already have an ID? <button type="button" onClick={()=>setCustomerMode("login")} className="text-[#003D32] font-semibold hover:underline">Login</button></>
+                      )}
+                    </div>
+                    <button type="button" onClick={()=>{setCustomerOpen(false); setRegisterPage(true); window.location.hash="#register"}} className="w-full mt-1 border border-[#C5A880]/30 bg-[#C5A880]/10 text-[#003D32] rounded-full py-2.5 text-xs font-semibold hover:bg-[#C5A880]/20 transition">First Order? Full Registration — Get 15% OFF →</button>
+                    <p className="text-[11px] text-center text-zinc-400">ID (e.g. KVS-123456) is generated on register • Required to cluster orders by name in admin & /api/cluster</p>
+                  </form>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -1392,7 +1573,58 @@ export default function App() {
               <div className="p-6 border-t bg-[#E6F0EE]/60 space-y-4">
                 <div className="flex justify-between text-sm"><span>Subtotal</span><span className="font-semibold">Tk {cartTotal.toLocaleString()}.00</span></div>
                 <div className="flex justify-between text-sm"><span>Shipping</span><span className="text-green-600 font-medium">Free over Tk 1,999</span></div>
-                <button onClick={async () => { const customer = (()=>{ try{ const v=localStorage.getItem('krevos_first_customer'); if(v){const j=JSON.parse(v); return {name:j.name||'Guest', phone:j.phone||'—', address:j.address||'—'}} }catch{} return {name:'Guest Checkout', phone:'—', address:'—'} })(); const order = await createOrder(customer, [...cart], cartTotal); showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • KREVOS.Store will call you (MongoDB)`); setCart([]); setCartOpen(false)}} className="w-full bg-[#003D32] text-white rounded-full py-4 font-semibold hover:bg-[#004D40] transition">Checkout • Tk {cartTotal.toLocaleString()}.00</button>
+                {!authUser ? (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault()
+                    const fd = new FormData(e.currentTarget)
+                    const name = fd.get('c_name')?.toString().trim() || ''
+                    const phone = fd.get('c_phone')?.toString().trim() || ''
+                    const address = fd.get('c_address')?.toString().trim() || ''
+                    const email = fd.get('c_email')?.toString().trim() || ''
+                    if (!name) { showToast('Please enter your full name'); return }
+                    if (!phone) { showToast('Please enter your phone number'); return }
+                    if (!/^01[0-9]{9}$/.test(phone)) { showToast('Phone must be 01XXXXXXXXX (11 digits)'); return }
+                    if (!address) { showToast('Please enter delivery address'); return }
+                    const customer = { name, phone, email, address }
+                    try {
+                      const order = await createOrder(customer, [...cart], cartTotal)
+                      showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • Guest • delivering to ${address}`)
+                      setCart([]); setCartOpen(false)
+                    } catch(err) { showToast(err.message || 'Order failed') }
+                  }} className="space-y-3 bg-white rounded-2xl p-4 border border-[#E6F0EE]">
+                    <p className="text-xs font-bold text-[#003D32]">First Order — Your Information Required <span className="text-red-500">*</span></p>
+                    <p className="text-[11px] text-zinc-500">Name, Phone & Address needed to deliver • Already have an ID? <button type="button" onClick={()=>{setCartOpen(false); setTimeout(()=>{setCustomerOpen(true); setCustomerMode("login")},150)}} className="text-[#003D32] underline font-semibold">Login</button> • or order as guest</p>
+                    <input name="c_name" required placeholder="Full Name *" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32]" />
+                    <input name="c_phone" required pattern="01[0-9]{9}" placeholder="Phone 01XXXXXXXXX *" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32]" />
+                    <input name="c_email" type="email" placeholder="Email (optional)" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32]" />
+                    <input name="c_address" required placeholder="Delivery Address — Road, Area, District *" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32]" />
+                    <button type="submit" className="w-full bg-[#003D32] text-white rounded-full py-3 font-semibold hover:bg-[#004D40] transition">Place Order • Tk {cartTotal.toLocaleString()}.00 — Guest</button>
+                    <p className="text-[11px] text-center text-zinc-500">Cash on Delivery • Free delivery over Tk 1999 • No login needed</p>
+                    <p className="text-[11px] text-center text-zinc-400">Want 15% OFF? <button type="button" onClick={()=>{setCartOpen(false); setTimeout(()=>{setCustomerOpen(true); setCustomerMode("register")},150)}} className="text-[#003D32] font-semibold underline">Create ID</button></p>
+                  </form>
+                ) : (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault()
+                    const fd = new FormData(e.currentTarget)
+                    const address = fd.get('address')?.toString().trim() || ''
+                    if (!address) { showToast('Please fill delivery address'); return }
+                    const customer = { name: authUser.name, phone: authUser.phone, email: authUser.email, address, userId: authUser.userId }
+                    try {
+                      const order = await createOrder(customer, [...cart], cartTotal)
+                      showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • ID ${authUser.userId} • will cluster in orders`)
+                      setCart([]); setCartOpen(false)
+                    } catch(err) { showToast(err.message || 'Order failed') }
+                  }} className="space-y-3">
+                    <div className="bg-white rounded-2xl p-3 border border-[#E6F0EE] text-xs">
+                      <p className="font-semibold">{authUser.name} <span className="font-mono bg-[#003D32] text-white px-1.5 py-0.5 rounded-full">{authUser.userId}</span></p>
+                      <p className="text-zinc-500">{authUser.phone} • {authUser.email}</p>
+                    </div>
+                    <label className="text-xs font-semibold">Delivery Address <span className="text-red-500">*</span></label>
+                    <input name="address" required defaultValue={authUser.address||''} placeholder="Delivery Address — Road, Area, District *" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32] bg-white" />
+                    <button type="submit" className="w-full bg-[#003D32] text-white rounded-full py-4 font-semibold hover:bg-[#004D40] transition">Checkout • Tk {cartTotal.toLocaleString()}.00 — {authUser?.userId}</button>
+                    <p className="text-[11px] text-center text-zinc-500">Cash on Delivery • Free delivery over Tk 1999 • ID {authUser.userId}</p>
+                  </form>
+                )}
                 <button onClick={() => setCartOpen(false)} className="w-full text-sm font-medium text-center hover:underline">Continue Shopping</button>
               </div>
             )}
@@ -1472,31 +1704,85 @@ export default function App() {
               </div>
 
               <form onSubmit={async (e) => {
-                e.preventDefault()
-                const form = new FormData(e.currentTarget)
-                const name = form.get('name')
-                const phone = form.get('phone')
-                const address = form.get('address')
-                if (!name || !phone) { showToast('Please fill name & phone'); return }
-                const total = orderProduct.price * orderQty
-                const customer = { name: name.trim(), phone: phone.trim(), address: (address||'').trim() }
-                await createOrder(customer, [{ ...orderProduct, size: orderSize, qty: orderQty }], total)
-                addToCart({...orderProduct, size: orderSize, qty: orderQty})
-                setOrderProduct(null)
-                setOrderQty(1)
-                showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • KREVOS.Store will call ${phone} (MongoDB)`)
-                setCartOpen(true)
-              }} className="mt-6 space-y-3">
-                <p className="text-sm font-semibold">Delivery Details — Online Order at krevos.store</p>
-                <input name="name" required placeholder="Full Name" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
-                <input name="phone" required placeholder="Phone Number (01XXXXXXXXX)" pattern="01[0-9]{9}" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
-                <input name="address" required placeholder="Delivery Address — Road, Area, District" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
-                <div className="flex gap-2 pt-2">
-                  <button type="button" onClick={() => setOrderProduct(null)} className="flex-1 border border-[#DDE8E6] rounded-full py-3.5 text-sm font-semibold hover:bg-[#E6F0EE]/60 transition">Cancel</button>
-                  <button type="submit" className="flex-[1.6] bg-[#003D32] text-white rounded-full py-3.5 text-sm font-bold hover:bg-[#004D40] transition">Confirm Order — Tk {(orderProduct.price * orderQty).toLocaleString()}</button>
-                </div>
-                <p className="text-xs text-center text-zinc-500 pt-2">Cash on Delivery • Free delivery over Tk 1999 • 7-day exchange</p>
-              </form>
+                  e.preventDefault()
+                  const form = new FormData(e.currentTarget)
+                  let customer
+                  let address = form.get('address')?.toString().trim() || ''
+                  // Guest checkout: collect name/phone/address if not logged in
+                  if (authUser) {
+                    if (!address) { showToast('Please fill delivery address'); return }
+                    customer = { name: authUser.name, phone: authUser.phone, email: authUser.email, address, userId: authUser.userId }
+                  } else {
+                    const name = form.get('c_name')?.toString().trim() || ''
+                    const phone = form.get('c_phone')?.toString().trim() || ''
+                    const guestAddr = form.get('c_address')?.toString().trim() || address
+                    const email = form.get('c_email')?.toString().trim() || ''
+                    if (!name) { showToast('Please enter your full name'); return }
+                    if (!phone) { showToast('Please enter your phone number'); return }
+                    if (!/^01[0-9]{9}$/.test(phone)) { showToast('Phone must be 01XXXXXXXXX (11 digits)'); return }
+                    if (!guestAddr) { showToast('Please enter delivery address'); return }
+                    customer = { name, phone, email, address: guestAddr }
+                    address = guestAddr
+                  }
+                  const total = orderProduct.price * orderQty
+                  try {
+                    await createOrder(customer, [{ ...orderProduct, size: orderSize, qty: orderQty }], total)
+                    addToCart({...orderProduct, size: orderSize, qty: orderQty})
+                    setOrderProduct(null)
+                    setOrderQty(1)
+                    if (authUser) {
+                      showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • ID ${authUser.userId} • clustered under ${authUser.name}`)
+                    } else {
+                      showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • Delivering to ${address}`)
+                    }
+                    setCartOpen(true)
+                  } catch(err) { showToast(err.message || 'Order failed') }
+                }} className="mt-6 space-y-3">
+                  {authUser ? (
+                    <>
+                      <div className="rounded-2xl bg-[#F6F8F7] border border-[#E6F0EE] p-4">
+                        <p className="text-xs font-semibold tracking-widest uppercase text-zinc-500">Ordering as</p>
+                        <p className="text-sm font-bold mt-1">{authUser.name} <span className="font-mono text-xs bg-[#003D32] text-white px-2 py-0.5 rounded-full ml-1">{authUser.userId}</span></p>
+                        <p className="text-xs text-zinc-500 mt-1">{authUser.phone} • {authUser.email}</p>
+                        {authUser.address && <p className="text-xs text-zinc-500">{authUser.address}</p>}
+                        <p className="text-[11px] text-[#003D32] font-medium mt-2">Order will be clustered by your name in admin &amp; cluster DB.</p>
+                      </div>
+                      <p className="text-sm font-semibold">Delivery Address — {authUser.name} <span className="text-red-500">*</span></p>
+                      <input name="address" required defaultValue={authUser.address || ''} placeholder="Delivery Address — Road, Area, District *" className="w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4">
+                        <p className="text-xs font-bold text-amber-800">First order — please provide Name, Phone & Address <span className="text-red-500">*</span></p>
+                        <p className="text-[11px] text-amber-700 mt-1">Required to deliver your order. Already have an ID? <button type="button" onClick={() => { setOrderProduct(null); setPendingOrderProduct(orderProduct); setCustomerOpen(true); setCustomerMode("login") }} className="underline font-bold text-[#003D32]">Login here</button> — or order as guest below.</p>
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold">Full Name <span className="text-red-500">*</span></label>
+                        <input name="c_name" required placeholder="e.g. Rahim Ahmed" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-semibold">Phone <span className="text-red-500">*</span></label>
+                          <input name="c_phone" required pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold">Email <span className="text-zinc-400 font-normal">(optional)</span></label>
+                          <input name="c_email" type="email" placeholder="you@gmail.com" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold">Delivery Address <span className="text-red-500">*</span></label>
+                        <input name="c_address" required placeholder="Road, Area, District — full address" className="mt-1 w-full border border-[#DDE8E6] rounded-full px-5 py-3 text-sm outline-none focus:border-[#003D32] focus:ring-2 focus:ring-[#003D32]/10" />
+                      </div>
+                    </>
+                  )}
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setOrderProduct(null)} className="flex-1 border border-[#DDE8E6] rounded-full py-3.5 text-sm font-semibold hover:bg-[#E6F0EE]/60 transition">Cancel</button>
+                    <button type="submit" className="flex-[1.6] bg-[#003D32] text-white rounded-full py-3.5 text-sm font-bold hover:bg-[#004D40] transition">{authUser ? `Confirm Order — Tk ${(orderProduct.price * orderQty).toLocaleString()} — ${authUser.userId}` : `Confirm Order — Tk ${(orderProduct.price * orderQty).toLocaleString()} — Guest`}</button>
+                  </div>
+                  <p className="text-xs text-center text-zinc-500 pt-2">Cash on Delivery • Free delivery over Tk 1999 • 7-day exchange {authUser ? `• ID ${authUser.userId}` : `• No login needed`}</p>
+                  {!authUser && <p className="text-[11px] text-center text-zinc-400">Want to track orders? <button type="button" onClick={() => { setOrderProduct(null); setPendingOrderProduct(orderProduct); setCustomerOpen(true); setCustomerMode("register") }} className="text-[#003D32] font-semibold underline">Create ID — Get 15% OFF</button></p>}
+                </form>
             </div>
           </div>
         </div>
@@ -1526,7 +1812,21 @@ export default function App() {
                 <button onClick={() => { setMobileOpen(false); setTimeout(() => setSearchOpen(true), 100)}} className="flex-1 flex items-center justify-center gap-2 border border-[#DDE8E6] rounded-full py-2.5 text-sm font-medium hover:bg-[#002A22] hover:text-white hover:border-[#003D32] transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Search</button>
                 <button onClick={() => { setMobileOpen(false); setCartOpen(true)}} className="flex-1 bg-[#003D32] text-white rounded-full py-2.5 text-sm font-medium">View Cart ({cartCount})</button>
               </div>
-              <button onClick={() => { setMobileOpen(false); setTimeout(() => setCustomerOpen(true), 100)}} className="block w-full text-left py-3 text-sm text-zinc-600 hover:text-[#003D32] border-t border-[#E6F0EE] mt-2">My Account — Login / Register</button>
+              {authUser ? (
+                <div className="border-t border-[#E6F0EE] mt-2 pt-3">
+                  <div className="flex items-center gap-3 bg-[#F6F8F7] rounded-2xl p-3 border border-[#E6F0EE]">
+                    <div className="w-10 h-10 rounded-full bg-[#003D32] text-white grid place-items-center font-bold">{authUser.name.slice(0,1).toUpperCase()}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{authUser.name} <span className="font-mono text-[10px] bg-[#003D32] text-white px-1.5 py-0.5 rounded-full">{authUser.userId}</span></p>
+                      <p className="text-xs text-zinc-500 truncate">{authUser.phone} • {authUser.email}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => { setMobileOpen(false); setTimeout(() => setCustomerOpen(true), 100)}} className="block w-full text-left py-2 text-sm text-[#003D32] font-medium mt-2">View ID & Orders ({orders.filter(o=> o.userId===authUser.userId || o.customer.phone===authUser.phone).length}) →</button>
+                  <button onClick={() => { handleLogout(); setMobileOpen(false) }} className="block w-full text-left py-2 text-sm text-red-600">Logout</button>
+                </div>
+              ) : (
+                <button onClick={() => { setMobileOpen(false); setTimeout(() => setCustomerOpen(true), 100)}} className="block w-full text-left py-3 text-sm text-zinc-600 hover:text-[#003D32] border-t border-[#E6F0EE] mt-2">My Account — Login / Register (ID required to order)</button>
+              )}
             </nav>
             <div className="p-6 bg-[#E6F0EE]/60 m-6 rounded-2xl">
               <p className="text-xs tracking-widest uppercase font-semibold">Need Help?</p>
