@@ -1,7 +1,7 @@
 const API_BASE=(import.meta.env.VITE_API_URL||'').replace(/\/$/,'')
 async function request(path, opts={}){
   const url=`${API_BASE}${path}`
-  const res=await fetch(url,{headers:{'Content-Type':'application/json',...(opts.headers||{})},...opts})
+  const res=await fetch(url,{headers:{'Content-Type':'application/json',...(opts.headers||{})},cache:'no-store',...opts})
   if(!res.ok){ const t=await res.text(); let e=t; try{e=JSON.parse(t).error||t}catch{}; throw new Error(e||`HTTP ${res.status}`)}
   if(res.status===204) return null
   const ct=res.headers.get('content-type')||''

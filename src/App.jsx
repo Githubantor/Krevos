@@ -84,42 +84,94 @@ export default function App() {
   const [orders, setOrders] = useState(() => { try { const v = localStorage.getItem('krevos_orders'); return v ? JSON.parse(v) : [] } catch { return [] } })
   const [selectedCustomer, setSelectedCustomer] = useState(null)
 
-  // ── MongoDB sync: fetch every data on mount ──
+  const [dbSync, setDbSync] = useState({ loading: true, lastSync: null, mode: 'loading', error: null, dbName: null, health: null })
+
+  const applyProductsToBuckets = (products) => {
+    const buckets = { spring: [], denim: [], joggers: [], hoodies: [], shacket: [], sweater: [] }
+    products.forEach(p => {
+      const cat = p.category
+      if (['polo','tshirt','premium','spring-drop'].includes(cat)) buckets.spring.push(p)
+      else if (cat === 'denim') buckets.denim.push(p)
+      else if (cat === 'joggers') buckets.joggers.push(p)
+      else if (cat === 'hoodies') buckets.hoodies.push(p)
+      else if (cat === 'shacket') buckets.shacket.push(p)
+      else if (cat === 'sweater' || cat === 'half-zip') buckets.sweater.push(p)
+      else buckets.spring.push(p)
+    })
+    if (products.length > 0) {
+      setSpringProducts(buckets.spring.length ? buckets.spring : products)
+      setDenimProducts(buckets.denim)
+      setJoggersProducts(buckets.joggers)
+      setHoodiesProducts(buckets.hoodies)
+      setShacketProducts(buckets.shacket)
+      setSweaterProducts(buckets.sweater)
+    } else if (products.length === 0) {
+      // DB empty — keep fallback but clear if DB says 0
+      // don't overwrite with empty to avoid flicker on cold start, but allow explicit clear via admin
+    }
+  }
+
+  const syncFromDB = async (opts = {}) => {
+    const { silent = false } = opts
+    if (!silent) setDbSync(s => ({ ...s, loading: true, error: null }))
+    try {
+      const [products, ordersData, health, stats] = await Promise.all([
+        api.getProducts().catch(err => { console.warn('getProducts failed', err.message); return null }),
+        api.getOrders().catch(err => { console.warn('getOrders failed', err.message); return null }),
+        api.health().catch(()=> null),
+        api.stats().catch(()=> null),
+      ])
+      if (products && Array.isArray(products)) {
+        applyProductsToBuckets(products)
+      }
+      if (ordersData && Array.isArray(ordersData)) {
+        setOrders(ordersData)
+      }
+      const rawMode = health?.db === 'connected' ? 'mongo' : (stats?.mode || (health?.db || 'unknown'))
+      const mode = rawMode === 'connected' ? 'mongo' : rawMode
+      setDbSync({
+        loading: false,
+        lastSync: new Date(),
+        mode,
+        dbName: health?.name || stats?.db || null,
+        error: null,
+        health,
+        stats
+      })
+      return { products, ordersData, health, stats }
+    } catch (e) {
+      console.warn('Mongo sync failed', e)
+      setDbSync(s => ({ ...s, loading: false, error: e.message || 'Sync failed' }))
+      return null
+    }
+  }
+
+  // ── MongoDB sync: fetch every data on mount + background refresh ──
   useEffect(() => {
     let cancelled = false
-    async function loadFromMongo() {
-      try {
-        const [products, ordersData] = await Promise.all([
-          api.getProducts().catch(err => { console.warn('getProducts failed', err.message); return null }),
-          api.getOrders().catch(err => { console.warn('getOrders failed', err.message); return null }),
-        ])
-        if (cancelled) return
-        if (products && Array.isArray(products)) {
-          const buckets = { spring: [], denim: [], joggers: [], hoodies: [], shacket: [], sweater: [] }
-          products.forEach(p => {
-            const cat = p.category
-            if (['polo','tshirt','premium','spring-drop'].includes(cat)) buckets.spring.push(p)
-            else if (cat === 'denim') buckets.denim.push(p)
-            else if (cat === 'joggers') buckets.joggers.push(p)
-            else if (cat === 'hoodies') buckets.hoodies.push(p)
-            else if (cat === 'shacket') buckets.shacket.push(p)
-            else if (cat === 'sweater' || cat === 'half-zip') buckets.sweater.push(p)
-            else buckets.spring.push(p)
-          })
-          if (products.length > 0) {
-            setSpringProducts(buckets.spring.length ? buckets.spring : products)
-            setDenimProducts(buckets.denim)
-            setJoggersProducts(buckets.joggers)
-            setHoodiesProducts(buckets.hoodies)
-            setShacketProducts(buckets.shacket)
-            setSweaterProducts(buckets.sweater)
-          }
-        }
-        if (ordersData && Array.isArray(ordersData)) setOrders(ordersData)
-      } catch (e) { console.warn('Mongo sync failed', e) }
-    }
-    loadFromMongo()
-    return () => { cancelled = true }
+    syncFromDB()
+    // fast retry 3 times if first fails (Vercel cold start — DB connecting)
+    let retries = 0
+    const retryTimer = setInterval(() => {
+      if (cancelled) return
+      setDbSync(s => {
+        if (s.error || s.mode !== 'mongo') {
+          if (retries < 3) { retries++; setTimeout(()=> syncFromDB({ silent: true }), 100) }
+        } else clearInterval(retryTimer)
+        return s
+      })
+    }, 3000)
+    // background refresh for storefront (any device) every 20s — ensures cross-device auto-sync
+    const storePoll = setInterval(() => {
+      if (cancelled) return
+      syncFromDB({ silent: true })
+    }, 20000)
+    // also re-sync when tab becomes visible (user switches device tab)
+    const onVis = () => { if (document.visibilityState === 'visible') syncFromDB({ silent: true }) }
+    const onFocus = () => syncFromDB({ silent: true })
+    document.addEventListener('visibilitychange', onVis)
+    window.addEventListener('focus', onFocus)
+    return () => { cancelled = true; clearInterval(retryTimer); clearInterval(storePoll); document.removeEventListener('visibilitychange', onVis); window.removeEventListener('focus', onFocus) }
   }, [])
 
   useEffect(() => { localStorage.setItem('krevos_spring', JSON.stringify(springProducts)) }, [springProducts])
@@ -139,14 +191,15 @@ export default function App() {
     setOrders(prev => [localOrder, ...prev])
     try {
       const saved = await api.createOrder({ customer: customerWithId, items, total, status: 'Pending', id: localOrder.id, userId })
-      if (saved && saved.id) { setOrders(prev => prev.map(o => o.id === localOrder.id ? { ...saved } : o)); return saved }
+      if (saved && saved.id) { setOrders(prev => prev.map(o => o.id === localOrder.id ? { ...saved } : o)); setTimeout(()=> syncFromDB({silent:true}), 500); return saved }
+      setTimeout(()=> syncFromDB({silent:true}), 500)
     } catch (e) { console.warn('createOrder Mongo failed', e.message); showToast('Order saved locally — will sync when online') }
     return localOrder
   }
   const confirmOrder = async (id) => {
     setOrders(prev => prev.map(o => o.id===id ? { ...o, status: 'Confirmed' } : o))
     showToast("Order confirmed — customer will be notified")
-    try { await api.updateOrderStatus(id, 'Confirmed') } catch (e) { console.warn('confirmOrder Mongo failed', e.message) }
+    try { await api.updateOrderStatus(id, 'Confirmed'); setTimeout(()=> syncFromDB({silent:true}), 400) } catch (e) { console.warn('confirmOrder Mongo failed', e.message) }
   }
   const pendingCount = orders.filter(o=>o.status==='Pending').length
 
@@ -190,6 +243,7 @@ export default function App() {
       else if (["sweater","half-zip"].includes(cat)) setSweaterProducts(prev => [base, ...prev])
       else setSpringProducts(prev => [base, ...prev])
       showToast(`${base.name} — added to ${cat} (MongoDB)`)
+      setTimeout(()=> syncFromDB({silent:true}), 600)
     } catch (err) {
       console.warn('addProduct Mongo failed', err.message)
       const base = { id: Date.now(), ...payload }
@@ -214,7 +268,7 @@ export default function App() {
     setShacketProducts(prev=>prev.filter(p=>p.id!==id && p._id!==id && p.pid!==id))
     setSweaterProducts(prev=>prev.filter(p=>p.id!==id && p._id!==id && p.pid!==id))
     showToast("Product removed")
-    try { await api.deleteProduct(id) } catch (e) { console.warn('deleteProduct failed', e.message) }
+    try { await api.deleteProduct(id); setTimeout(()=> syncFromDB({silent:true}), 500) } catch (e) { console.warn('deleteProduct failed', e.message) }
   }
 
   // ── Admin (password-only) ──
@@ -253,6 +307,24 @@ export default function App() {
     if (adminView) {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
+  }, [adminView])
+
+  // ── Admin auto-sync: every device loads from DB automatically ──
+  useEffect(() => {
+    if (adminView) {
+      // instant sync when admin opens (any device/browser)
+      syncFromDB({ silent: false })
+    }
+  }, [adminView])
+  useEffect(() => {
+    if (adminView && adminAuthed) {
+      syncFromDB({ silent: false })
+    }
+  }, [adminAuthed])
+  useEffect(() => {
+    if (!adminView) return
+    const id = setInterval(() => syncFromDB({ silent: true }), 8000) // live: admin sees new orders within 8s on any device
+    return () => clearInterval(id)
   }, [adminView])
 
   const [infoPage, setInfoPage] = useState(null)
@@ -455,6 +527,18 @@ export default function App() {
                 <p className="text-sm text-zinc-500 mt-2">Password-authenticated • KREVOS.Store • Deep Bottle Green #003D32</p>
               </div>
               <button onClick={exitAdmin} className="border border-[#DDE8E6] rounded-full px-6 py-2.5 text-sm font-medium hover:bg-white transition">Exit Admin → Store</button>
+            </div>
+            {/* ── DB Sync Status — auto-loads on any device/browser ── */}
+            <div className={`rounded-2xl border p-4 mb-6 flex flex-wrap items-center gap-3 text-xs ${dbSync.mode==='mongo' ? 'bg-green-50 border-green-200' : dbSync.mode==='memory' ? 'bg-amber-50 border-amber-200' : 'bg-white border-[#E6F0EE]'}`}>
+              <div className="flex items-center gap-2">
+                <span className={`w-2.5 h-2.5 rounded-full ${dbSync.loading ? 'bg-amber-500 animate-pulse' : dbSync.mode==='mongo' ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+                <span className="font-bold tracking-widest uppercase text-[11px]">{dbSync.loading ? 'Syncing…' : dbSync.mode==='mongo' ? `Live • MongoDB ${dbSync.dbName || 'krevos'}` : dbSync.mode==='memory' ? 'Memory fallback — check MONGODB_URI' : `DB: ${dbSync.mode}`}</span>
+              </div>
+              <span className="text-zinc-500 hidden md:inline">•</span>
+              <span className="text-zinc-600">{dbSync.lastSync ? `Last sync ${dbSync.lastSync.toLocaleTimeString()} • auto-sync every 8s (any device/browser)` : 'Waiting for first sync…'}</span>
+              {dbSync.error && <span className="text-red-600 font-medium">• Error: {dbSync.error}</span>}
+              <button onClick={()=> syncFromDB()} disabled={dbSync.loading} className="ml-auto bg-[#003D32] text-white rounded-full px-4 py-2 text-xs font-bold hover:bg-[#004D40] disabled:opacity-50 transition">{dbSync.loading ? 'Syncing…' : '↻ Refresh Now'}</button>
+              <span className="text-[11px] text-zinc-500 w-full md:w-auto">{orders.length} orders • {springProducts.length + denimProducts.length + joggersProducts.length + hoodiesProducts.length + shacketProducts.length + sweaterProducts.length} products • Every device loads from DB automatically • Try incognito to verify</span>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <div className="bg-white rounded-2xl border border-[#E6F0EE] p-6"><p className="text-xs tracking-widest uppercase font-semibold text-zinc-500">Total Products</p><p className="text-3xl font-bold mt-2 text-[#003D32]">{springProducts.length + denimProducts.length + joggersProducts.length + hoodiesProducts.length + shacketProducts.length + sweaterProducts.length}</p><p className="text-xs text-zinc-500 mt-1">Live in storefront</p></div>
