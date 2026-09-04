@@ -70,6 +70,8 @@ export default function App() {
   const [orderProduct, setOrderProduct] = useState(null)
   const [orderSize, setOrderSize] = useState('M')
   const [orderQty, setOrderQty] = useState(1)
+  const [orderPayment, setOrderPayment] = useState('COD')
+  const [cartPayment, setCartPayment] = useState('COD')
   const heroRef = useRef(null)
 
   // ── Products (MongoDB primary, localStorage fallback) ──
@@ -184,13 +186,16 @@ export default function App() {
 
   const totalSell = orders.reduce((s,o)=> s + (o.total || 0), 0)
 
-  const createOrder = async (customer, items, total) => {
+  const createOrder = async (customer, items, total, payment = null) => {
     const userId = authUser?.userId || customer.userId || null
     const customerWithId = { ...customer, userId, email: customer.email || authUser?.email || '' }
-    const localOrder = { id: 'CRS-' + Date.now().toString().slice(-6), date: new Date().toISOString(), customer: customerWithId, userId, items, total, status: 'Pending' }
+    const pm = payment?.paymentMethod === 'bKash' ? 'bKash' : 'COD'
+    const localOrder = { id: 'CRS-' + Date.now().toString().slice(-6), date: new Date().toISOString(), customer: customerWithId, userId, items, total, status: 'Pending', paymentMethod: pm, paymentStatus: pm==='bKash' ? 'Paid' : 'Pending', bkashNumber: payment?.bkashNumber || null, bkashTrxId: payment?.bkashTrxId || null }
     setOrders(prev => [localOrder, ...prev])
     try {
-      const saved = await api.createOrder({ customer: customerWithId, items, total, status: 'Pending', id: localOrder.id, userId })
+      const payload = { customer: customerWithId, items, total, status: 'Pending', id: localOrder.id, userId, paymentMethod: pm }
+      if (pm==='bKash') { payload.bkashNumber = payment?.bkashNumber || ''; payload.bkashTrxId = payment?.bkashTrxId || '' }
+      const saved = await api.createOrder(payload)
       if (saved && saved.id) { setOrders(prev => prev.map(o => o.id === localOrder.id ? { ...saved } : o)); setTimeout(()=> syncFromDB({silent:true}), 500); return saved }
       setTimeout(()=> syncFromDB({silent:true}), 500)
     } catch (e) { console.warn('createOrder Mongo failed', e.message); showToast('Order saved locally — will sync when online') }
@@ -542,7 +547,7 @@ export default function App() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
               <div className="bg-white rounded-2xl border border-[#E6F0EE] p-4 sm:p-6"><p className="text-xs tracking-widest uppercase font-semibold text-zinc-500">Total Products</p><p className="text-2xl sm:text-3xl font-bold mt-2 text-[#003D32]">{springProducts.length + denimProducts.length + joggersProducts.length + hoodiesProducts.length + shacketProducts.length + sweaterProducts.length}</p><p className="text-xs text-zinc-500 mt-1">Live in storefront</p></div>
-              <div className="bg-[#003D32] text-white rounded-2xl border border-[#003D32] p-4 sm:p-6"><p className="text-xs tracking-widest uppercase font-semibold text-white/60">Total Sell Amount</p><p className="text-2xl sm:text-3xl font-bold mt-2">Tk {totalSell.toLocaleString()}</p><p className="text-xs text-white/60 mt-1">{orders.length} orders • Lifetime</p></div>
+              <div className="bg-[#003D32] text-white rounded-2xl border border-[#003D32] p-4 sm:p-6"><p className="text-xs tracking-widest uppercase font-semibold text-white/60">Total Sell Amount</p><p className="text-2xl sm:text-3xl font-bold mt-2">Tk {totalSell.toLocaleString()}</p><p className="text-xs text-white/60 mt-1">{orders.length} orders • Lifetime</p><p className="text-[11px] text-white/70 mt-1.5 flex gap-2">{(() => { const b=orders.filter(o=>o.paymentMethod==='bKash').length; const c=orders.length-b; const bt=orders.filter(o=>o.paymentMethod==='bKash').reduce((s,o)=>s+(o.total||0),0); return <><span className="bg-[#E2136E] text-white px-2 py-0.5 rounded-full font-bold">bKash {b}</span><span className="bg-white/15 px-2 py-0.5 rounded-full">COD {c}</span>{b>0 && <span>Tk {bt.toLocaleString()} bKash</span>}</> })()}</p></div>
               <div className="bg-white rounded-2xl border border-[#E6F0EE] p-4 sm:p-6"><p className="text-xs tracking-widest uppercase font-semibold text-zinc-500">Total Orders</p><p className="text-3xl font-bold mt-2 text-[#003D32]">{orders.length}</p><p className="text-xs mt-1">{pendingCount>0 ? <span className="text-amber-600 font-semibold">{pendingCount} pending • Tap to confirm</span> : <span className="text-zinc-500">No pending — all confirmed</span>}</p></div>
               <div className="bg-white rounded-2xl border border-[#E6F0EE] p-4 sm:p-6"><p className="text-xs tracking-widest uppercase font-semibold text-zinc-500">Customers</p><p className="text-3xl font-bold mt-2 text-[#003D32]">{new Set(orders.map(o=>o.customer.phone||o.customer.name)).size}</p><p className="text-xs text-zinc-500 mt-1">Unique buyers • Click row → history</p></div>
             </div>
@@ -645,11 +650,14 @@ export default function App() {
                             <div className="border-t border-[#E6F0EE] bg-[#F6F8F7]/50 p-3 space-y-2">
                               {custOrders.slice().sort((a,b)=> new Date(b.date)-new Date(a.date)).map(o=>(
                                 <div key={o.id} className="bg-white rounded-xl border border-[#E6F0EE] p-3">
-                                  <div className="flex items-center justify-between text-xs gap-2">
+                                  <div className="flex items-center justify-between text-xs gap-2 flex-wrap">
                                     <span className="font-mono font-semibold bg-[#E6F0EE] text-[#003D32] px-2 py-1 rounded-full">{o.id}</span>
                                     <span className="font-mono text-[10px] bg-[#003D32] text-white px-2 py-1 rounded-full">{o.userId || o.customer.userId || 'no-ID'}</span>
+                                    <span className={`px-2 py-1 rounded-full font-bold text-[10px] tracking-widest uppercase ${o.paymentMethod==='bKash' ? 'bg-[#E2136E] text-white' : 'bg-zinc-100 text-zinc-600 border border-zinc-200'}`}>{o.paymentMethod==='bKash' ? 'bKash' : 'COD'}</span>
+                                    {o.paymentMethod==='bKash' && <span className={`px-2 py-1 rounded-full font-bold text-[10px] ${o.paymentStatus==='Paid' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-amber-100 text-amber-700'}`}>{o.paymentStatus || 'Paid'} {o.bkashTrxId ? `• ${o.bkashTrxId}` : ''}</span>}
                                     <span className={`ml-auto px-2 py-1 rounded-full font-bold text-[10px] tracking-widest uppercase ${o.status==='Pending' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-green-100 text-green-700 border border-green-200'}`}>{o.status || 'Pending'}</span>
                                   </div>
+                                  {o.paymentMethod==='bKash' && <div className="mt-1.5 bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-lg px-3 py-2 text-[11px] flex flex-wrap gap-3"><span className="text-[#E2136E] font-bold">bKash {o.bkashNumber || ''}</span><span className="font-mono bg-white border border-[#E2136E]/20 rounded px-2 py-0.5">TrxID: {o.bkashTrxId || '—'}</span><span className="text-zinc-500">Tk {o.total.toLocaleString()} • {o.paymentStatus}</span></div>}
                                   <div className="flex items-center justify-between text-xs mt-2">
                                     <span className="text-zinc-500">{new Date(o.date).toLocaleString()} • {o.customer.name} • {o.customer.email || 'no-email'}</span>
                                     <div className="flex items-center gap-2">
@@ -1673,11 +1681,19 @@ export default function App() {
                     if (!phone) { showToast('Please enter your phone number'); return }
                     if (!/^01[0-9]{9}$/.test(phone)) { showToast('Phone must be 01XXXXXXXXX (11 digits)'); return }
                     if (!address) { showToast('Please enter delivery address'); return }
+                    let payment=null
+                    if (cartPayment==='bKash') {
+                      const bn=fd.get('bkash_number')?.toString().trim()||''
+                      const trx=fd.get('bkash_trx')?.toString().trim()||''
+                      if(!bn || !/^01[0-9]{9}$/.test(bn)){ showToast('bKash number must be 01XXXXXXXXX'); return }
+                      if(!trx || trx.length<6){ showToast('Enter valid bKash TrxID'); return }
+                      payment={paymentMethod:'bKash', bkashNumber:bn, bkashTrxId:trx}
+                    } else payment={paymentMethod:'COD'}
                     const customer = { name, phone, email, address }
                     try {
-                      const order = await createOrder(customer, [...cart], cartTotal)
-                      showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • Guest • delivering to ${address}`)
-                      setCart([]); setCartOpen(false)
+                      const order = await createOrder(customer, [...cart], cartTotal, payment)
+                      showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • ${payment.paymentMethod==='bKash' ? 'bKash Paid' : 'COD'} • Guest`)
+                      setCart([]); setCartOpen(false); setCartPayment('COD')
                     } catch(err) { showToast(err.message || 'Order failed') }
                   }} className="space-y-3 bg-white rounded-2xl p-4 border border-[#E6F0EE]">
                     <p className="text-xs font-bold text-[#003D32]">First Order — Your Information Required <span className="text-red-500">*</span></p>
@@ -1686,8 +1702,20 @@ export default function App() {
                     <input name="c_phone" required pattern="01[0-9]{9}" placeholder="Phone 01XXXXXXXXX *" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32]" />
                     <input name="c_email" type="email" placeholder="Email (optional)" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32]" />
                     <input name="c_address" required placeholder="Delivery Address — Road, Area, District *" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32]" />
-                    <button type="submit" className="w-full bg-[#003D32] text-white rounded-full py-3 font-semibold hover:bg-[#004D40] transition">Place Order • Tk {cartTotal.toLocaleString()}.00 — Guest</button>
-                    <p className="text-[11px] text-center text-zinc-500">Cash on Delivery • Free delivery over Tk 1999 • No login needed</p>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button type="button" onClick={()=> setCartPayment('COD')} className={`rounded-full py-2.5 text-xs font-bold border transition ${cartPayment==='COD' ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white border-[#DDE8E6]'}`}>COD</button>
+                      <button type="button" onClick={()=> setCartPayment('bKash')} className={`rounded-full py-2.5 text-xs font-bold border transition ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white border-[#E2136E]' : 'bg-[#E2136E]/5 text-[#E2136E] border-[#E2136E]/20'}`}>bKash</button>
+                    </div>
+                    {cartPayment==='bKash' && (
+                      <div className="bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-2xl p-3 space-y-2">
+                        <div className="flex items-center gap-2 text-[11px] font-bold text-[#E2136E]"><span className="bg-[#E2136E] text-white px-2 py-0.5 rounded text-[10px]">bKash</span> Merchant 01951250125 • Tk {cartTotal.toLocaleString()}</div>
+                        <p className="text-[10px] text-zinc-600">Send Money to 01951250125 then enter TrxID below</p>
+                        <input name="bkash_number" required={cartPayment==='bKash'} pattern="01[0-9]{9}" placeholder="Your bKash Number 01XXXXXXXXX *" className="w-full border border-[#E2136E]/20 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#E2136E] bg-white" />
+                        <input name="bkash_trx" required={cartPayment==='bKash'} placeholder="bKash TrxID *" className="w-full border border-[#E2136E]/20 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#E2136E] bg-white" />
+                      </div>
+                    )}
+                    <button type="submit" className={`w-full rounded-full py-3 font-semibold transition ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white hover:bg-[#C0105E]' : 'bg-[#003D32] text-white hover:bg-[#004D40]'}`}>Place Order • Tk {cartTotal.toLocaleString()}.00 — {cartPayment==='bKash' ? 'bKash' : 'Guest COD'}</button>
+                    <p className="text-[11px] text-center text-zinc-500">{cartPayment==='bKash' ? 'bKash Paid • ' : 'Cash on Delivery • '}Free delivery over Tk 1999</p>
                     <p className="text-[11px] text-center text-zinc-400">Want 15% OFF? <button type="button" onClick={()=>{setCartOpen(false); setTimeout(()=>{setCustomerOpen(true); setCustomerMode("register")},150)}} className="text-[#003D32] font-semibold underline">Create ID</button></p>
                   </form>
                 ) : (
@@ -1696,11 +1724,19 @@ export default function App() {
                     const fd = new FormData(e.currentTarget)
                     const address = fd.get('address')?.toString().trim() || ''
                     if (!address) { showToast('Please fill delivery address'); return }
+                    let payment=null
+                    if (cartPayment==='bKash') {
+                      const bn=fd.get('bkash_number')?.toString().trim()||''
+                      const trx=fd.get('bkash_trx')?.toString().trim()||''
+                      if(!bn || !/^01[0-9]{9}$/.test(bn)){ showToast('bKash number must be 01XXXXXXXXX'); return }
+                      if(!trx || trx.length<6){ showToast('Enter valid bKash TrxID'); return }
+                      payment={paymentMethod:'bKash', bkashNumber:bn, bkashTrxId:trx}
+                    } else payment={paymentMethod:'COD'}
                     const customer = { name: authUser.name, phone: authUser.phone, email: authUser.email, address, userId: authUser.userId }
                     try {
-                      const order = await createOrder(customer, [...cart], cartTotal)
-                      showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • ID ${authUser.userId} • will cluster in orders`)
-                      setCart([]); setCartOpen(false)
+                      const order = await createOrder(customer, [...cart], cartTotal, payment)
+                      showToast(`Order ${order.id} placed — Tk ${cartTotal.toLocaleString()} • ${payment.paymentMethod==='bKash' ? 'bKash Paid' : 'COD'} • ID ${authUser.userId}`)
+                      setCart([]); setCartOpen(false); setCartPayment('COD')
                     } catch(err) { showToast(err.message || 'Order failed') }
                   }} className="space-y-3">
                     <div className="bg-white rounded-2xl p-3 border border-[#E6F0EE] text-xs">
@@ -1709,8 +1745,19 @@ export default function App() {
                     </div>
                     <label className="text-xs font-semibold">Delivery Address <span className="text-red-500">*</span></label>
                     <input name="address" required defaultValue={authUser.address||''} placeholder="Delivery Address — Road, Area, District *" className="w-full border border-[#DDE8E6] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#003D32] bg-white" />
-                    <button type="submit" className="w-full bg-[#003D32] text-white rounded-full py-4 font-semibold hover:bg-[#004D40] transition">Checkout • Tk {cartTotal.toLocaleString()}.00 — {authUser?.userId}</button>
-                    <p className="text-[11px] text-center text-zinc-500">Cash on Delivery • Free delivery over Tk 1999 • ID {authUser.userId}</p>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button type="button" onClick={()=> setCartPayment('COD')} className={`rounded-full py-2.5 text-xs font-bold border transition ${cartPayment==='COD' ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white border-[#DDE8E6]'}`}>COD</button>
+                      <button type="button" onClick={()=> setCartPayment('bKash')} className={`rounded-full py-2.5 text-xs font-bold border transition ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white border-[#E2136E]' : 'bg-[#E2136E]/5 text-[#E2136E] border-[#E2136E]/20'}`}>bKash</button>
+                    </div>
+                    {cartPayment==='bKash' && (
+                      <div className="bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-2xl p-3 space-y-2">
+                        <div className="flex items-center gap-2 text-[11px] font-bold text-[#E2136E]"><span className="bg-[#E2136E] text-white px-2 py-0.5 rounded text-[10px]">bKash</span> Merchant 01951250125 • Tk {cartTotal.toLocaleString()}</div>
+                        <input name="bkash_number" required={cartPayment==='bKash'} pattern="01[0-9]{9}" placeholder="Your bKash Number *" className="w-full border border-[#E2136E]/20 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#E2136E] bg-white" />
+                        <input name="bkash_trx" required={cartPayment==='bKash'} placeholder="bKash TrxID *" className="w-full border border-[#E2136E]/20 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#E2136E] bg-white" />
+                      </div>
+                    )}
+                    <button type="submit" className={`w-full rounded-full py-4 font-semibold transition ${cartPayment==='bKash' ? 'bg-[#E2136E] text-white hover:bg-[#C0105E]' : 'bg-[#003D32] text-white hover:bg-[#004D40]'}`}>Checkout • Tk {cartTotal.toLocaleString()}.00 — {cartPayment==='bKash' ? 'bKash Paid' : authUser?.userId}</button>
+                    <p className="text-[11px] text-center text-zinc-500">{cartPayment==='bKash' ? 'bKash Paid • ' : 'Cash on Delivery • '}Free delivery over Tk 1999 • ID {authUser.userId}</p>
                   </form>
                 )}
                 <button onClick={() => setCartOpen(false)} className="w-full text-sm font-medium text-center hover:underline">Continue Shopping</button>
@@ -1812,16 +1859,28 @@ export default function App() {
                     customer = { name, phone, email, address: guestAddr }
                     address = guestAddr
                   }
+                  // bKash validation
+                  let payment = null
+                  if (orderPayment === 'bKash') {
+                    const bn = form.get('bkash_number')?.toString().trim() || ''
+                    const trx = form.get('bkash_trx')?.toString().trim() || ''
+                    if (!bn || !/^01[0-9]{9}$/.test(bn)) { showToast('bKash number must be 01XXXXXXXXX (11 digits)'); return }
+                    if (!trx || trx.length < 6) { showToast('Enter valid bKash TrxID (min 6 chars)'); return }
+                    payment = { paymentMethod: 'bKash', bkashNumber: bn, bkashTrxId: trx }
+                  } else {
+                    payment = { paymentMethod: 'COD' }
+                  }
                   const total = orderProduct.price * orderQty
                   try {
-                    await createOrder(customer, [{ ...orderProduct, size: orderSize, qty: orderQty }], total)
+                    await createOrder(customer, [{ ...orderProduct, size: orderSize, qty: orderQty }], total, payment)
                     addToCart({...orderProduct, size: orderSize, qty: orderQty})
                     setOrderProduct(null)
                     setOrderQty(1)
+                    setOrderPayment('COD')
                     if (authUser) {
-                      showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • ID ${authUser.userId} • clustered under ${authUser.name}`)
+                      showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • ${payment.paymentMethod==='bKash' ? 'bKash Paid' : 'COD'} • ID ${authUser.userId}`)
                     } else {
-                      showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • Delivering to ${address}`)
+                      showToast(`Order placed — ${orderProduct.name} (${orderSize} × ${orderQty}) • ${payment.paymentMethod==='bKash' ? 'bKash Paid' : 'COD'} • Delivering to ${address}`)
                     }
                     setCartOpen(true)
                   } catch(err) { showToast(err.message || 'Order failed') }
@@ -1864,11 +1923,37 @@ export default function App() {
                       </div>
                     </>
                   )}
-                  <div className="flex gap-2 pt-2">
-                    <button type="button" onClick={() => setOrderProduct(null)} className="flex-1 border border-[#DDE8E6] rounded-full py-3.5 text-sm font-semibold hover:bg-[#E6F0EE]/60 transition">Cancel</button>
-                    <button type="submit" className="flex-[1.6] bg-[#003D32] text-white rounded-full py-3.5 text-sm font-bold hover:bg-[#004D40] transition">{authUser ? `Confirm Order — Tk ${(orderProduct.price * orderQty).toLocaleString()} — ${authUser.userId}` : `Confirm Order — Tk ${(orderProduct.price * orderQty).toLocaleString()} — Guest`}</button>
+                  {/* ── Payment Method — COD / bKash ── */}
+                  <div className="space-y-3 pt-2">
+                    <p className="text-sm font-semibold">Payment Method <span className="text-red-500">*</span></p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button type="button" onClick={()=> setOrderPayment('COD')} className={`rounded-full py-3 text-sm font-bold border transition flex items-center justify-center gap-2 ${orderPayment==='COD' ? 'bg-[#003D32] text-white border-[#003D32]' : 'bg-white border-[#DDE8E6] hover:border-[#003D32]'}`}>
+                        <span className={`w-2.5 h-2.5 rounded-full ${orderPayment==='COD' ? 'bg-white' : 'bg-zinc-300'}`} /> COD
+                      </button>
+                      <button type="button" onClick={()=> setOrderPayment('bKash')} className={`rounded-full py-3 text-sm font-bold border transition flex items-center justify-center gap-2 ${orderPayment==='bKash' ? 'bg-[#E2136E] text-white border-[#E2136E]' : 'bg-[#E2136E]/5 text-[#E2136E] border-[#E2136E]/20 hover:bg-[#E2136E]/10'}`}>
+                        <span className={`w-2.5 h-2.5 rounded-full ${orderPayment==='bKash' ? 'bg-white' : 'bg-[#E2136E]'}`} /> bKash
+                      </button>
+                    </div>
+                    {orderPayment==='bKash' && (
+                      <div className="bg-[#E2136E]/5 border border-[#E2136E]/20 rounded-2xl p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="bg-[#E2136E] text-white text-[11px] font-extrabold px-2 py-1 rounded">bKash</span>
+                          <span className="text-xs font-bold text-[#E2136E]">Merchant: 01951250125 (Personal)</span>
+                          <span className="ml-auto text-[11px] font-bold bg-white border border-[#E2136E]/20 rounded-full px-2 py-1">Tk {(orderProduct.price * orderQty).toLocaleString()}</span>
+                        </div>
+                        <p className="text-[11px] leading-relaxed text-zinc-700">1) Open bKash App → <b>Send Money</b> → To <b className="text-[#E2136E]">01951250125</b> → Amount <b>Tk {(orderProduct.price * orderQty).toLocaleString()}</b><br/>2) Copy the <b>Transaction ID (TrxID)</b> from bKash SMS and paste below</p>
+                        <input name="bkash_number" required={orderPayment==='bKash'} pattern="01[0-9]{9}" placeholder="Your bKash Number 01XXXXXXXXX *" className="w-full border border-[#E2136E]/20 rounded-full px-5 py-3 text-sm outline-none focus:border-[#E2136E] bg-white" />
+                        <input name="bkash_trx" required={orderPayment==='bKash'} placeholder="bKash TrxID e.g. 8N7K9X2PQ1 *" className="w-full border border-[#E2136E]/20 rounded-full px-5 py-3 text-sm outline-none focus:border-[#E2136E] bg-white" />
+                        <p className="text-[10px] text-zinc-500">Amount must match total. We verify TrxID before confirming order.</p>
+                      </div>
+                    )}
+                    {orderPayment==='COD' && <p className="text-[11px] text-zinc-500 bg-[#F6F8F7] border border-[#E6F0EE] rounded-full px-4 py-2 text-center">Cash on Delivery — Pay when you receive • Free delivery over Tk 1999</p>}
                   </div>
-                  <p className="text-xs text-center text-zinc-500 pt-2">Cash on Delivery • Free delivery over Tk 1999 • 7-day exchange {authUser ? `• ID ${authUser.userId}` : `• No login needed`}</p>
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => { setOrderProduct(null); setOrderPayment('COD') }} className="flex-1 border border-[#DDE8E6] rounded-full py-3.5 text-sm font-semibold hover:bg-[#E6F0EE]/60 transition">Cancel</button>
+                    <button type="submit" className={`flex-[1.6] rounded-full py-3.5 text-sm font-bold transition ${orderPayment==='bKash' ? 'bg-[#E2136E] text-white hover:bg-[#C0105E]' : 'bg-[#003D32] text-white hover:bg-[#004D40]'}`}>{authUser ? `Confirm — Tk ${(orderProduct.price * orderQty).toLocaleString()} ${orderPayment==='bKash' ? 'via bKash' : '— '+authUser.userId}` : `Confirm — Tk ${(orderProduct.price * orderQty).toLocaleString()} ${orderPayment==='bKash' ? 'via bKash' : '— Guest'}`}</button>
+                  </div>
+                  <p className="text-xs text-center text-zinc-500 pt-2">{orderPayment==='bKash' ? 'bKash Paid • ' : 'Cash on Delivery • '}Free delivery over Tk 1999 • 7-day exchange {authUser ? `• ID ${authUser.userId}` : `• No login needed`}</p>
                   {!authUser && <p className="text-[11px] text-center text-zinc-400">Want to track orders? <button type="button" onClick={() => { setOrderProduct(null); setPendingOrderProduct(orderProduct); setCustomerOpen(true); setCustomerMode("register") }} className="text-[#003D32] font-semibold underline">Create ID — Get 15% OFF</button></p>}
                 </form>
             </div>

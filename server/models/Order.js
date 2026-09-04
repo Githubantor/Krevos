@@ -10,6 +10,10 @@ const orderSchema = new mongoose.Schema({
   items: { type: [orderItemSchema], required: true },
   total: { type: Number, required: true },
   status: { type: String, enum: ['Pending','Confirmed','Cancelled','Shipped','Delivered'], default: 'Pending' },
+  paymentMethod: { type: String, enum: ['COD','bKash'], default: 'COD' },
+  paymentStatus: { type: String, enum: ['Pending','Paid','Failed','Unpaid'], default: 'Pending' },
+  bkashNumber: { type: String, default: null },
+  bkashTrxId: { type: String, default: null },
 }, { timestamps: true })
 orderSchema.index({ 'customer.phone': 1 })
 orderSchema.index({ userId: 1 })
