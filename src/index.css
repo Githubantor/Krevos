@@ -79,6 +79,20 @@
 .animate-scaleIn {
   animation: scaleIn 0.4s ease-out forwards;
 }
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out forwards;
+}
+.animate-slideInLeft {
+  animation: slideInLeft 0.3s ease-out forwards;
+}
 .animate-kenBurns {
   animation: kenBurns 8s ease-out forwards;
 }

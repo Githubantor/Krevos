@@ -673,8 +673,8 @@ export default function App() {
 
             {/* ── Add Product Modal ── */}
             {showAddModal && (
-              <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-                <div onClick={() => setShowAddModal(false)} className="absolute inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
+              <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
+                <div onClick={() => setShowAddModal(false)} className="fixed inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
                 <div className="relative bg-white rounded-[24px] max-w-[560px] w-full max-h-[90vh] overflow-auto shadow-2xl">
                   <div className="sticky top-0 bg-white border-b p-6 flex items-center justify-between rounded-t-[24px]">
                     <div>
@@ -727,7 +727,7 @@ export default function App() {
           </div>
         )}
         {toast && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] bg-[#003D32] text-white text-sm px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-fadeInUp">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] bg-[#003D32] text-white text-sm px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-fadeInUp">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             {toast}
           </div>
@@ -799,7 +799,7 @@ export default function App() {
           </div>
         </div>
         {toast && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] bg-[#003D32] text-white text-sm px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-fadeInUp">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] bg-[#003D32] text-white text-sm px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-fadeInUp">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             {toast}
           </div>
@@ -1330,8 +1330,8 @@ export default function App() {
 
       {/* ── Help & Info Modal — usable pages ── */}
       {infoPage && (
-        <div className="fixed inset-0 z-[65] flex items-center justify-center p-4">
-          <div onClick={() => setInfoPage(null)} className="absolute inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
+        <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
+          <div onClick={() => setInfoPage(null)} className="fixed inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
           <div className="relative bg-white rounded-[24px] max-w-[640px] w-full max-h-[90vh] overflow-auto shadow-2xl animate-scaleIn">
             <div className="sticky top-0 bg-white border-b p-6 flex items-center justify-between rounded-t-[24px]">
               <div>
@@ -1442,8 +1442,8 @@ export default function App() {
       {/* ── Cart Drawer ── */}
       {/* ── Customer Login (user icon) ── */}
       {customerOpen && (
-        <div className="fixed inset-0 z-[65] flex items-center justify-center p-4">
-          <div onClick={() => setCustomerOpen(false)} className="absolute inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
+        <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
+          <div onClick={() => setCustomerOpen(false)} className="fixed inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
           <div className="relative bg-white rounded-[24px] max-w-[420px] w-full shadow-2xl animate-scaleIn overflow-hidden">
             <div className="p-6 border-b flex items-center justify-between">
               <div>
@@ -1537,14 +1537,14 @@ export default function App() {
       )}
 
       {cartOpen && (
-        <div className="fixed inset-0 z-[60]">
-          <div onClick={() => setCartOpen(false)} className="absolute inset-0 bg-[#003D32]/40 backdrop-blur-sm" />
-          <div className="absolute right-0 top-0 h-full w-full max-w-[420px] bg-white shadow-2xl flex flex-col animate-scaleIn origin-right">
-            <div className="p-6 border-b flex items-center justify-between">
+        <div className="fixed inset-0 z-[70] flex justify-end">
+          <div onClick={() => setCartOpen(false)} className="fixed inset-0 bg-[#003D32]/50 backdrop-blur-sm" />
+          <div className="relative w-full max-w-[420px] h-[100dvh] bg-white shadow-2xl flex flex-col animate-slideInRight overflow-hidden">
+            <div className="shrink-0 p-6 border-b flex items-center justify-between bg-white">
               <h3 className="font-semibold">Shopping Cart — {cartCount} {cartCount===1?'item':'items'}</h3>
               <button onClick={() => setCartOpen(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center hover:bg-zinc-200 transition"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
             </div>
-            <div className="flex-1 overflow-auto p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 overscroll-contain">
               {cart.length===0 ? (
                 <div className="text-center py-16">
                   <div className="w-20 h-20 rounded-full bg-zinc-100 grid place-items-center mx-auto"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/></svg></div>
@@ -1570,7 +1570,7 @@ export default function App() {
               ))}
             </div>
             {cart.length>0 && (
-              <div className="p-6 border-t bg-[#E6F0EE]/60 space-y-4">
+              <div className="shrink-0 p-6 border-t bg-[#E6F0EE]/60 space-y-4 max-h-[58vh] overflow-y-auto overscroll-contain">
                 <div className="flex justify-between text-sm"><span>Subtotal</span><span className="font-semibold">Tk {cartTotal.toLocaleString()}.00</span></div>
                 <div className="flex justify-between text-sm"><span>Shipping</span><span className="text-green-600 font-medium">Free over Tk 1,999</span></div>
                 {!authUser ? (
@@ -1634,9 +1634,9 @@ export default function App() {
 
       {/* ── Search Drawer ── */}
       {searchOpen && (
-        <div className="fixed inset-0 z-[60]">
-          <div onClick={() => setSearchOpen(false)} className="absolute inset-0 bg-[#003D32]/40 backdrop-blur-sm" />
-          <div className="absolute top-0 inset-x-0 bg-white shadow-2xl animate-scaleIn origin-top">
+        <div className="fixed inset-0 z-[70]">
+          <div onClick={() => setSearchOpen(false)} className="fixed inset-0 bg-[#003D32]/40 backdrop-blur-sm" />
+          <div className="fixed top-0 inset-x-0 bg-white shadow-2xl animate-scaleIn origin-top">
             <div className="max-w-[760px] mx-auto p-6 md:p-8">
               <div className="flex items-center gap-3">
                 <div className="flex-1 flex items-center gap-3 border border-[#DDE8E6] rounded-full px-5 py-3 focus-within:border-[#003D32] focus-within:ring-2 focus-within:ring-black/5 transition">
@@ -1664,8 +1664,8 @@ export default function App() {
 
       {/* ── Quick Order Modal — Individual Collection Order Page ── */}
       {orderProduct && (
-        <div className="fixed inset-0 z-[65] flex items-center justify-center p-4">
-          <div onClick={() => setOrderProduct(null)} className="absolute inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
+        <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
+          <div onClick={() => setOrderProduct(null)} className="fixed inset-0 bg-[#003D32]/60 backdrop-blur-sm" />
           <div className="relative bg-white rounded-[24px] max-w-[560px] w-full max-h-[90vh] overflow-auto shadow-2xl animate-scaleIn">
             <div className="sticky top-0 bg-white border-b p-6 flex items-center justify-between rounded-t-[24px]">
               <div>
@@ -1790,9 +1790,9 @@ export default function App() {
 
       {/* ── Mobile Menu ── */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-[60] lg:hidden">
-          <div onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-[#003D32]/40 backdrop-blur-sm" />
-          <div className="absolute left-0 top-0 h-full w-[86%] max-w-[360px] bg-white shadow-2xl overflow-auto animate-scaleIn origin-left">
+        <div className="fixed inset-0 z-[70] lg:hidden flex justify-start">
+          <div onClick={() => setMobileOpen(false)} className="fixed inset-0 bg-[#003D32]/40 backdrop-blur-sm" />
+          <div className="relative h-[100dvh] w-[86%] max-w-[360px] bg-white shadow-2xl overflow-auto animate-slideInLeft">
             <div className="p-6 border-b flex items-center justify-between">
               <span className="font-brand font-bold tracking-[0.18em]">KREVOS.STORE</span>
               <button onClick={() => setMobileOpen(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
@@ -1839,7 +1839,7 @@ export default function App() {
 
       {/* ── Toast ── */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] bg-[#003D32] text-white text-sm px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-fadeInUp">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] bg-[#003D32] text-white text-sm px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-fadeInUp">
           <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
           {toast}
         </div>
